@@ -2,17 +2,22 @@
 --   which represent the state of the game
 module Model where
 
+import Moveable
+import Player
+
 data InfoToShow = ShowNothing
                 | ShowANumber Int
                 | ShowAChar   Char
 
-nO_SECS_BETWEEN_CYCLES :: Float
-nO_SECS_BETWEEN_CYCLES = 5
+ticksPerSec :: Float
+ticksPerSec = 0.03
 
-data GameState = GameState {
-                   infoToShow  :: InfoToShow
-                 , elapsedTime :: Float
-                 }
+startPos :: Position 
+startPos = Pos (0, 0)
 
-initialState :: GameState
-initialState = GameState ShowNothing 0
+data Model = State {
+  player :: Player
+}
+
+initialState :: Model
+initialState = State (PuckMan startPos)
