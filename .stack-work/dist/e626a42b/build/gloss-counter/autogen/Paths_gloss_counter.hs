@@ -29,12 +29,12 @@ version :: Version
 version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
-bindir     = "C:\\Users\\annem\\OneDrive\\Desktop\\gloss-counter\\gloss-counter\\.stack-work\\install\\8daf6e7d\\bin"
-libdir     = "C:\\Users\\annem\\OneDrive\\Desktop\\gloss-counter\\gloss-counter\\.stack-work\\install\\8daf6e7d\\lib\\x86_64-windows-ghc-8.6.5\\gloss-counter-0.1.0.0-AZJn2Fw613G5GpcUNu5vY2-gloss-counter"
-dynlibdir  = "C:\\Users\\annem\\OneDrive\\Desktop\\gloss-counter\\gloss-counter\\.stack-work\\install\\8daf6e7d\\lib\\x86_64-windows-ghc-8.6.5"
-datadir    = "C:\\Users\\annem\\OneDrive\\Desktop\\gloss-counter\\gloss-counter\\.stack-work\\install\\8daf6e7d\\share\\x86_64-windows-ghc-8.6.5\\gloss-counter-0.1.0.0"
-libexecdir = "C:\\Users\\annem\\OneDrive\\Desktop\\gloss-counter\\gloss-counter\\.stack-work\\install\\8daf6e7d\\libexec\\x86_64-windows-ghc-8.6.5\\gloss-counter-0.1.0.0"
-sysconfdir = "C:\\Users\\annem\\OneDrive\\Desktop\\gloss-counter\\gloss-counter\\.stack-work\\install\\8daf6e7d\\etc"
+bindir     = "C:\\Users\\jort\\Documents\\Development\\FP-game\\.stack-work\\install\\0a0ef2e3\\bin"
+libdir     = "C:\\Users\\jort\\Documents\\Development\\FP-game\\.stack-work\\install\\0a0ef2e3\\lib\\x86_64-windows-ghc-8.6.5\\gloss-counter-0.1.0.0-AZJn2Fw613G5GpcUNu5vY2-gloss-counter"
+dynlibdir  = "C:\\Users\\jort\\Documents\\Development\\FP-game\\.stack-work\\install\\0a0ef2e3\\lib\\x86_64-windows-ghc-8.6.5"
+datadir    = "C:\\Users\\jort\\Documents\\Development\\FP-game\\.stack-work\\install\\0a0ef2e3\\share\\x86_64-windows-ghc-8.6.5\\gloss-counter-0.1.0.0"
+libexecdir = "C:\\Users\\jort\\Documents\\Development\\FP-game\\.stack-work\\install\\0a0ef2e3\\libexec\\x86_64-windows-ghc-8.6.5\\gloss-counter-0.1.0.0"
+sysconfdir = "C:\\Users\\jort\\Documents\\Development\\FP-game\\.stack-work\\install\\0a0ef2e3\\etc"
 
 getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath
 getBinDir = catchIO (getEnv "gloss_counter_bindir") (\_ -> return bindir)
