@@ -1,23 +1,22 @@
--- | This module contains the data types
---   which represent the state of the game
 module Model where
-
-import Moveable
-import Player
+  
+import Player ( Player(PuckMan) )
+import Moveable ()
 
 data InfoToShow = ShowNothing
-                | ShowANumber Int
-                | ShowAChar   Char
+                | ShowPlayer
 
-ticksPerSec :: Float
-ticksPerSec = 0.03
+interval :: Float
+interval = 0.033
 
-startPos :: Position 
-startPos = Pos (0, 0)
+type IsKeyPressed = Maybe Char
 
-data Model = State {
-  player :: Player
-}
+data GameState = GameState {
+                   infoToShow  :: InfoToShow
+                 , ticks :: Float
+                 , player :: Player
+                 , isKeyPressed :: IsKeyPressed
+                 }
 
-initialState :: Model
-initialState = State (PuckMan startPos)
+initialState :: GameState
+initialState = GameState ShowNothing 0 (PuckMan (0, 0)) Nothing 

@@ -1,31 +1,39 @@
--- | This module defines how the state changes
---   in response to time and user input
 module Controller where
 
 import Model
-
+import Player ( Player(PuckMan) )
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
+import Moveable (up, down, left, right)
 
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
-step secs gstate
-  | elapsedTime gstate + secs > nO_SECS_BETWEEN_CYCLES
-  = -- We show a new random number
-    do randomNumber <- randomIO
-       let newNumber = abs randomNumber `mod` 10
-       return $ GameState (ShowANumber newNumber) 0
-  | otherwise
-  = -- Just update the elapsed time
-    return $ gstate { elapsedTime = elapsedTime gstate + secs }
+step secs state | ticks state + secs > interval
+  = case isKeyPressed state of
+      Nothing -> return $ state {
+        ticks = ticks state + secs
+        }
+      Just c -> return $ state {
+        player = makeMove (player state) c,
+        infoToShow = ShowPlayer,
+        ticks = ticks state + secs
+        }
 
--- | Handle user input
+-- If input is received, return changed game state
 input :: Event -> GameState -> IO GameState
-input e gstate = return (inputKey e gstate)
+input e state = return (inputKey e state)
 
-inputKey :: Event -> GameState -> GameState
-inputKey (EventKey (Char c) _ _ _) gstate
-  = -- If the user presses a character key, show that one
-    gstate { infoToShow = ShowAChar c }
-inputKey _ gstate = gstate -- Otherwise keep the same
+-- Check if a key is pressed down change state, otherwise leave state as it was
+inputKey :: Event -> GameState -> GameState 
+inputKey (EventKey (Char c) pressed _ _) state | pressed == Down = state { isKeyPressed = Just c }
+                                               | otherwise = state 
+inputKey _ state = state
+
+-- When a key is pressed, move puck-man based on which key is pressed
+makeMove :: Player -> Char -> Player
+makeMove p c | c == 'w' = up p 
+              | c == 's' = down p 
+              | c == 'a' = left p 
+              | c == 'd' = right p 
+              | otherwise = p
