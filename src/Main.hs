@@ -9,7 +9,7 @@ import Graphics.Gloss (loadBMP)
 
 main :: IO ()
 main = do
-    playIO (InWindow "Puck-Man" (400, 400) (0, 0)) -- Or FullScreen
+    playIO (InWindow "Puck-Man" (800, 800) (0, 0)) -- Or FullScreen
               black            -- Background color
               20               -- Frames per second
               initialState     -- Initial state

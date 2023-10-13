@@ -6,16 +6,16 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
 import Move (up, down, left, right, Association (..), Position, getMove)
+import Ghost (moveAlgorithm)
 
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs state | isPaused state == Pause = return $ state {
-                  ticks      = ticks state + secs,
-                  infoToShow = ShowPlayer
+                  ticks      = ticks state + secs
                   }
                 | otherwise               = return $ state {
                   player     = makeMove (player state),
-                  infoToShow = ShowPlayer,
+                  blinky     = moveAlgorithm (blinky state) (player state),
                   ticks      = ticks state + secs
                   }
   where
@@ -26,6 +26,7 @@ step secs state | isPaused state == Pause = return $ state {
 input :: Event -> GameState -> IO GameState
 input e state = return (inputKey e state)
 
+
 -- Check if a key is pressed down change state, otherwise leave state as it was
 inputKey :: Event -> GameState -> GameState
 inputKey (EventKey (Char c) t _ _) state
@@ -34,10 +35,6 @@ inputKey (EventKey (Char c) t _ _) state
   | otherwise             = state { player = updateInputBuffer c (player state) }
 inputKey _ state          = state
 
--- Pauses or unpauses game 
-pauseGame :: IsPaused -> IsPaused
-pauseGame p | p == Pause = Play
-            | otherwise  = Pause
 
 -- when a key is pressed, move player based on which key is pressed
 makeMove :: Player -> Player
@@ -48,7 +45,7 @@ makeMove (PuckMan pos ibs) = PuckMan (move ibs pos) ibs
     move ((_, t, a):ibs') pos' | t == Depressed = getMove a pos'
                                | otherwise      = move ibs' pos'
     move [] pos' = pos'
-
+    
 
 -- Updates the input buffer of a player when a key is pressed 
 updateInputBuffer :: Char -> Player -> Player
