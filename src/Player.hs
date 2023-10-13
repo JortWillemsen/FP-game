@@ -1,40 +1,59 @@
-{-# LANGUAGE InstanceSigs #-} -- IDK wat dit doet, moet ik nog ff uitzoeken
 module Player where
 
-import Moveable ( Position, Moveable (getPosition, up, down, left, right) )
+import Move ( Position, Association (..) )
 
-data Player = PuckMan Position
-            | MsPuckMan Position
-            | JrPuckMan Position
-            | BabyPuckMan Position
+data Player = PuckMan Position [InputBuffer]
+            | MsPuckMan Position [InputBuffer]
+            | JrPuckMan Position [InputBuffer]
+            | BabyPuckMan Position [InputBuffer]
 
-instance Moveable Player where 
-    getPosition :: Player -> Position -- Get player's position
-    getPosition (PuckMan p) = p 
-    getPosition (MsPuckMan p) = p 
-    getPosition (JrPuckMan p) = p 
-    getPosition (BabyPuckMan p) = p 
+data Toggled = Depressed | Released 
+               deriving Eq
 
-    up :: Player -> Player -- Move player up
-    up (PuckMan (x, y)) = PuckMan (x, y+5)
-    up (MsPuckMan (x, y)) = MsPuckMan (x, y+5)
-    up (JrPuckMan (x, y)) = JrPuckMan (x, y+5) 
-    up (BabyPuckMan (x, y)) = BabyPuckMan (x, y+5) 
+type InputBuffer = (Char, Toggled, Association)
 
-    down :: Player -> Player -- Move player down
-    down (PuckMan (x, y)) = PuckMan (x, y-5)
-    down (MsPuckMan (x, y)) = MsPuckMan (x, y-5)
-    down (JrPuckMan (x, y)) = JrPuckMan (x, y-5) 
-    down (BabyPuckMan (x, y)) = BabyPuckMan (x, y-5) 
+resetInputBuffer :: Player -> Player
+resetInputBuffer (PuckMan pos ibs) = PuckMan pos inputBufferWASD
 
-    left :: Player -> Player -- Move player left
-    left (PuckMan (x, y)) = PuckMan (x-5, y)
-    left (MsPuckMan (x, y)) = MsPuckMan (x-5, y)
-    left (JrPuckMan (x, y)) = JrPuckMan (x-5, y) 
-    left (BabyPuckMan (x, y)) = BabyPuckMan (x-5, y) 
+inputBufferWASD :: [InputBuffer]
+inputBufferWASD = [('w', Released, GoUp), 
+                   ('a', Released, GoLeft), 
+                   ('s', Released, GoDown), 
+                   ('d', Released, GoRight)]
 
-    right :: Player -> Player -- Move player right
-    right (PuckMan (x, y)) = PuckMan (x+5, y)
-    right (MsPuckMan (x, y)) = MsPuckMan (x+5, y)
-    right (JrPuckMan (x, y)) = JrPuckMan (x+5, y) 
-    right (BabyPuckMan (x, y)) = BabyPuckMan (x+5, y) 
+-- inputBufferArrows :: [InputBuffer]
+-- inputBufferArrows = [('w', Released, GoUp), 
+--                      ('a', Released, GoLeft), 
+--                      ('s', Released, GoDown), 
+--                      ('d', Released, GoRight)]
+
+-- instance Moveable Player where 
+--     getPosition :: Player -> Position -- Get player's position
+--     getPosition (PuckMan p _) = p 
+--     getPosition (MsPuckMan p _) = p 
+--     getPosition (JrPuckMan p _) = p 
+--     getPosition (BabyPuckMan p _) = p 
+
+--     up :: Player -> Player -- Move player up
+--     up (PuckMan (x, y) ib) = PuckMan (x, y+5) ib
+--     up (MsPuckMan (x, y) ib) = MsPuckMan (x, y+5) ib
+--     up (JrPuckMan (x, y) ib) = JrPuckMan (x, y+5) ib
+--     up (BabyPuckMan (x, y) ib) = BabyPuckMan (x, y+5) ib
+
+--     down :: Player -> Player -- Move player down
+--     down (PuckMan (x, y) ib) = PuckMan (x, y-5) ib
+--     down (MsPuckMan (x, y) ib) = MsPuckMan (x, y-5) ib
+--     down (JrPuckMan (x, y) ib) = JrPuckMan (x, y-5) ib
+--     down (BabyPuckMan (x, y) ib) = BabyPuckMan (x, y-5) ib
+
+--     left :: Player -> Player -- Move player left
+--     left (PuckMan (x, y) ib) = PuckMan (x-5, y) ib
+--     left (MsPuckMan (x, y) ib) = MsPuckMan (x-5, y) ib
+--     left (JrPuckMan (x, y) ib) = JrPuckMan (x-5, y) ib
+--     left (BabyPuckMan (x, y) ib) = BabyPuckMan (x-5, y) ib
+
+--     right :: Player -> Player -- Move player right
+--     right (PuckMan (x, y) ib) = PuckMan (x+5, y) ib
+--     right (MsPuckMan (x, y) ib) = MsPuckMan (x+5, y) ib
+--     right (JrPuckMan (x, y) ib) = JrPuckMan (x+5, y) ib
+--     right (BabyPuckMan (x, y) ib) = BabyPuckMan (x+5, y) ib

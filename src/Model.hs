@@ -1,7 +1,7 @@
 module Model where
   
-import Player ( Player(PuckMan) )
-import Moveable ()
+import Player ( Player(PuckMan), Toggled (Released), inputBufferWASD )
+import Move ()
 
 data InfoToShow = ShowNothing
                 | ShowPlayer
@@ -9,14 +9,15 @@ data InfoToShow = ShowNothing
 interval :: Float
 interval = 0.033
 
-type IsKeyPressed = Maybe Char
+data IsPaused = Play | Pause 
+                deriving (Show, Eq)
 
 data GameState = GameState {
-                   infoToShow  :: InfoToShow
-                 , ticks :: Float
-                 , player :: Player
-                 , isKeyPressed :: IsKeyPressed
+                   infoToShow :: InfoToShow
+                 , isPaused   :: IsPaused
+                 , ticks      :: Float
+                 , player     :: Player
                  }
 
 initialState :: GameState
-initialState = GameState ShowNothing 0 (PuckMan (0, 0)) Nothing 
+initialState = GameState ShowNothing Play 0 (PuckMan (0, 0) inputBufferWASD) 
