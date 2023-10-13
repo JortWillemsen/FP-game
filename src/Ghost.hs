@@ -8,12 +8,12 @@ data Ghost = Blinky Position
             | Clyde Position
 
 moveAlgorithm :: Ghost -> Player -> Ghost
-moveAlgorithm (Blinky (xg, yg)) (PuckMan (xp, yp) _) = 
-    Blinky (x', y')
+moveAlgorithm (Blinky (xg, yg)) (PuckMan (xp, yp) _) | xp == xg && yg == yp                 = Blinky (xg, yg)
+                                                     | yg == yp                             = Blinky (x', yg)
+                                                     | (xp - 2.5) == xg || xg == (xp + 2.5) = Blinky (xg, y')
+                                                     | otherwise                            = Blinky (x', y')
   where
-    x' = if xp < xg 
-          then xg - 2 
-          else xg + 2 
-    y' = if yp > yg 
-          then yg + 2 
-          else yg - 2
+    x' | xp <= xg  = xg - 2.5 
+       | otherwise = xg + 2.5
+    y' | yp >= yg  = yg + 2.5 
+       | otherwise = yg - 2.5
