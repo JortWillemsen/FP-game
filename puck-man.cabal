@@ -17,6 +17,7 @@ executable puck-man
                      , Model
                      , View
                      , Maze
-                     , Moveable
                      , Player
+                     , Move
+                     , Ghost
   default-language:    Haskell2010

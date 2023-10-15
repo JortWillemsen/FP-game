@@ -1,6 +1,6 @@
 module Maze where
 
-import Moveable
+import Move
 
 data Tile
   = Wall Position (Maybe WallType)
@@ -82,6 +82,6 @@ bitmaps = [
     (Stump S, "./Sprites/walls/wall_stump_btm.bmp"),
     (Stump W, "./Sprites/walls/wall_stump_l.bmp"),
 
-    (Contained, "./Sprites/walls/wall_contained.bmp"),
+    (Contained, "./Sprites/walls/wall_contained.bmp")
   ]
 
