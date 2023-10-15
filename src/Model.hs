@@ -14,7 +14,6 @@ data IsPaused = Play | Pause
 pauseGame :: IsPaused -> IsPaused -- HIER OF CONTROLLER?
 pauseGame p | p == Pause = Play
             | otherwise  = Pause
-
 data GameState = GameState {
                    isPaused   :: IsPaused
                  , ticks      :: Float
