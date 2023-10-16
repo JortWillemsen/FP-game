@@ -36,8 +36,8 @@ data Collectable
 -- XOXOX
 -- XOOOX
 -- XXXXX
-basicLevel :: Maze
-basicLevel =
+basicMaze :: Maze
+basicMaze =
   [ [Wall (0.0, 4.0) (Just (Corner Nw)), Wall (1.0, 4.0) (Just (Pipe H)), Wall (2.0, 4.0) (Just (Pipe H)), Wall (3.0, 4.0) (Just (Pipe H)), Wall (4.0, 4.0) (Just (Corner Ne))],
     [Wall (0.0, 3.0) (Just (Pipe V)), Floor (1.0, 3.0), Floor (2.0, 3.0), Floor (3.0, 3.0), Wall (4.0, 3.0) (Just (Pipe V))],
     [Wall (0.0, 2.0) (Just (Pipe V)), Floor (1.0, 2.0), Wall (2.0, 2.0) (Just Contained), Floor (3.0, 2.0), Wall (4.0, 2.0) (Just (Pipe V))],
@@ -45,8 +45,8 @@ basicLevel =
     [Wall (0.0, 0.0) (Just (Corner Sw)), Wall (1.0, 0.0) (Just (Pipe H)), Wall (2.0, 0.0) (Just (Pipe H)), Wall (3.0, 0.0) (Just (Pipe H)), Wall (4.0, 0.0) (Just (Corner Se))]
   ]
 
-loadLevel :: [String] -> Maze
-loadLevel rs = loadLevel' (reverse rs) 0
+loadMaze :: [String] -> Maze
+loadMaze rs = loadLevel' (reverse rs) 0
   where
     loadLevel' [] _ = []
     loadLevel' (r : rs) y = loadRow r y : loadLevel' rs (y + 1)

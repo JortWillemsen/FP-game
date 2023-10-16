@@ -12,7 +12,8 @@ initialWorldState :: IO WorldState
 initialWorldState =
   do
     textures <- loadTextures
-    return $ WorldState initialState textures
+    level <- loadLevel
+    return $ WorldState (initialState level) textures
 
 type Texture = Picture
 
@@ -37,6 +38,12 @@ data WallTextures = WallTextures
     pipeV :: Texture,
     contained :: Texture
   }
+
+loadLevel :: IO [String]
+loadLevel = do
+  level <- readFile "level/level.txt"
+
+  return $ lines level
 
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures

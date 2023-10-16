@@ -30,19 +30,22 @@ showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures@AllTextures {wallTextures = wTextures} = concatMap (\row -> mapMaybe (\tile -> loadTile tile wTextures) row) m
 
 loadTile :: Tile -> WallTextures -> Maybe Picture
-loadTile (Wall (x, y) (Just (Corner Nw))) wt@WallTextures {cornerNw = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Corner Ne))) wt@WallTextures {cornerNe = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Corner Sw))) wt@WallTextures {cornerSw = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Corner Se))) wt@WallTextures {cornerSe = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Edge N))) wt@WallTextures {edgeN = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Edge E))) wt@WallTextures {edgeE = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Edge S))) wt@WallTextures {edgeS = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Edge W))) wt@WallTextures {edgeW = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Stump N))) wt@WallTextures {stumpN = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Stump E))) wt@WallTextures {stumpE = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Stump S))) wt@WallTextures {stumpS = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Stump W))) wt@WallTextures {stumpW = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Pipe H))) wt@WallTextures {pipeH = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just (Pipe V))) wt@WallTextures {pipeV = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
-loadTile (Wall (x, y) (Just Contained)) wt@WallTextures {contained = txtr} = Just $ translate (x * textureSize) (y * textureSize) txtr
 loadTile (Floor _) _ = Nothing
+loadTile (Wall (x, y) Nothing) wt = Just $ translate (x * textureSize) (y * textureSize) (contained  wt)
+loadTile (Wall (x, y) (Just tile)) wt = Just $ translate (x * textureSize) (y * textureSize) (f tile $ wt)
+  where
+    f (Corner Nw) = cornerNw
+    f (Corner Ne) = cornerNe
+    f (Corner Sw) = cornerSw
+    f (Corner Se) = cornerSe
+    f (Edge N) = edgeN
+    f (Edge E) = edgeE
+    f (Edge S) = edgeS
+    f (Edge W) = edgeW
+    f (Stump N) = stumpN
+    f (Stump E) = stumpE
+    f (Stump S) = stumpS
+    f (Stump W) = stumpW
+    f (Pipe H) = pipeH
+    f (Pipe V) = pipeV
+    f Contained = contained

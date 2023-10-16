@@ -3,7 +3,7 @@ module Model where
 import Player ( Player(PuckMan), Toggled (Released), inputBufferWASD )
 import Move ()
 import Ghost (Ghost (Blinky))
-import Maze (Maze, basicLevel)
+import Maze (Maze, basicMaze, loadMaze)
 
 interval :: Float
 interval = 0.033
@@ -23,5 +23,6 @@ data GameState = GameState {
                   , blinky     :: Ghost
                 }
 
-initialState :: GameState
-initialState = GameState basicLevel Play 0 (PuckMan (100, 100) inputBufferWASD) (Blinky (0, 0))
+-- Takes level for first time maze generation.
+initialState :: [String] -> GameState
+initialState level = GameState (loadMaze level) Play 0 (PuckMan (100, 100) inputBufferWASD) (Blinky (0, 0))
