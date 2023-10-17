@@ -19,7 +19,8 @@ type Texture = Picture
 
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,
-    collectibleTextures :: CollectibleTextures
+    collectibleTextures :: CollectibleTextures,
+    playerTexture :: Texture
   }
 
 data WallTextures = WallTextures
@@ -40,10 +41,10 @@ data WallTextures = WallTextures
     contained :: Texture
   }
 
-data CollectibleTextures = CollectibleTextures {
-  dot :: Texture,
-  energizer :: Texture
-}
+data CollectibleTextures = CollectibleTextures
+  { dot :: Texture,
+    energizer :: Texture
+  }
 
 loadLevel :: IO [String]
 loadLevel = do
@@ -55,6 +56,7 @@ loadLevel = do
 loadTextures :: IO AllTextures
 loadTextures =
   do
+    playerTexture <- loadBMP "Assets/walls/wall_contained.bmp"
     collectibleTextures <-
       CollectibleTextures
         <$> loadBMP "Assets/collectibles/dot.bmp"
@@ -78,4 +80,4 @@ loadTextures =
         <*> loadBMP "Assets/walls/wall_contained.bmp"
 
     -- Creating the all textures structure with all the textures loaded.
-    return $ AllTextures wallTextures collectibleTextures
+    return $ AllTextures wallTextures collectibleTextures playerTexture
