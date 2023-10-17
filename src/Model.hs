@@ -1,9 +1,9 @@
 module Model where
   
 import Player ( Player(PuckMan), Toggled (Released), inputBufferWASD )
-import Move ()
+import Move
 import Ghost (Ghost (Blinky))
-import Maze (Maze, loadMaze)
+import Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
 
 interval :: Float
 interval = 0.033
@@ -25,4 +25,8 @@ data GameState = GameState {
 
 -- Takes level for first time maze generation.
 initialState :: [String] -> GameState
-initialState level = GameState (loadMaze level) Play 0 (PuckMan (100, 100) inputBufferWASD) (Blinky (0, 0))
+initialState level = GameState maze Play 0 (PuckMan playerSpawn inputBufferWASD) (Blinky ghostSpawn) where
+  maze = loadMaze level
+  playerSpawn = pos $ head $ getSpawns PlayerSpawn maze
+  ghostSpawn = pos $ head $ getSpawns GhostSpawn maze
+

@@ -18,7 +18,9 @@ initialWorldState =
 type Texture = Picture
 
 data AllTextures = AllTextures
-  { wallTextures :: WallTextures
+  { wallTextures :: WallTextures,
+    collectibleTextures :: CollectibleTextures,
+    playerTexture :: Texture
   }
 
 data WallTextures = WallTextures
@@ -39,6 +41,11 @@ data WallTextures = WallTextures
     contained :: Texture
   }
 
+data CollectibleTextures = CollectibleTextures
+  { dot :: Texture,
+    energizer :: Texture
+  }
+
 loadLevel :: IO [String]
 loadLevel = do
   level <- readFile "level/level.txt"
@@ -49,6 +56,11 @@ loadLevel = do
 loadTextures :: IO AllTextures
 loadTextures =
   do
+    playerTexture <- loadBMP "Assets/walls/wall_contained.bmp"
+    collectibleTextures <-
+      CollectibleTextures
+        <$> loadBMP "Assets/collectibles/dot.bmp"
+        <*> loadBMP "Assets/collectibles/energizer.bmp"
     wallTextures <-
       WallTextures
         <$> loadBMP "Assets/walls/wall_corner_tl.bmp"
@@ -68,4 +80,4 @@ loadTextures =
         <*> loadBMP "Assets/walls/wall_contained.bmp"
 
     -- Creating the all textures structure with all the textures loaded.
-    return $ AllTextures wallTextures
+    return $ AllTextures wallTextures collectibleTextures playerTexture
