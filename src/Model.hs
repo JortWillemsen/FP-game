@@ -1,23 +1,28 @@
--- | This module contains the data types
---   which represent the state of the game
 module Model where
+  
+import Player ( Player(PuckMan), Toggled (Released), inputBufferWASD )
+import Move ()
+import Ghost (Ghost (Blinky))
+import Maze (Maze, loadMaze)
 
-import Moveable
-import Player
+interval :: Float
+interval = 0.033
 
-data InfoToShow = ShowNothing
-                | ShowANumber Int
-                | ShowAChar   Char
+data IsPaused = Play | Pause 
+                deriving (Show, Eq)
 
-ticksPerSec :: Float
-ticksPerSec = 0.03
+-- Pauses or unpauses game 
+pauseGame :: IsPaused -> IsPaused -- HIER OF CONTROLLER?
+pauseGame p | p == Pause = Play
+            | otherwise  = Pause
+data GameState = GameState {
+                    maze         :: Maze
+                  , isPaused   :: IsPaused
+                  , ticks      :: Float
+                  , player     :: Player
+                  , blinky     :: Ghost
+                }
 
-startPos :: Position 
-startPos = Pos (0, 0)
-
-data Model = State {
-  player :: Player
-}
-
-initialState :: Model
-initialState = State (PuckMan startPos)
+-- Takes level for first time maze generation.
+initialState :: [String] -> GameState
+initialState level = GameState (loadMaze level) Play 0 (PuckMan (100, 100) inputBufferWASD) (Blinky (0, 0))
