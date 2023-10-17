@@ -14,13 +14,13 @@ getMove a | a == GoUp = up
           | a == GoRight = right
 
 up :: Position -> Position
-up (x, y) = (x, y+5)
+up (x, y) = (x, y+1)
 
 down :: Position -> Position 
-down (x, y) = (x, y-5)
+down (x, y) = (x, y-1)
 
 left :: Position -> Position
-left (x, y) = (x-5, y)
+left (x, y) = (x-1, y)
 
 right :: Position -> Position 
-right (x, y) = (x+5, y)
+right (x, y) = (x+1, y)

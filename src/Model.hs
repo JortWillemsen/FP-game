@@ -26,6 +26,7 @@ data GameState = GameState {
 -- Takes level for first time maze generation.
 initialState :: [String] -> GameState
 <<<<<<< HEAD
+<<<<<<< HEAD
 initialState level = GameState maze Play 0 (PuckMan playerSpawn inputBufferWASD) (Blinky ghostSpawn) where
   maze = loadMaze level
   playerSpawn = pos $ head $ getSpawns PlayerSpawn maze
@@ -34,3 +35,6 @@ initialState level = GameState maze Play 0 (PuckMan playerSpawn inputBufferWASD)
 =======
 initialState level = GameState (loadMaze level) Play 0 (PuckMan (110, 80) inputBufferWASD) (Blinky (0, 0))
 >>>>>>> 2a5a71d (start collision)
+=======
+initialState level = GameState (loadMaze level) Play 0 (PuckMan (110, 70) inputBufferWASD) (Blinky (110, 20))
+>>>>>>> 928bdfa (collision player fixed)

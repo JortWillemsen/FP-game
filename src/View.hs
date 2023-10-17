@@ -28,6 +28,7 @@ view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y
 
 showAll :: WorldState -> Picture
 <<<<<<< HEAD
+<<<<<<< HEAD
 showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state allTextures, showGhost state] ++ (showMaze state allTextures)
 
 showPlayer :: GameState -> AllTextures -> Picture
@@ -35,6 +36,9 @@ showPlayer gstate textures = case player gstate of
   (PuckMan (x, y) _) -> translate x y $ playerTexture textures
 =======
 showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state] ++ (showMaze state allTextures)
+=======
+showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state, showGhost state] ++ (showMaze state allTextures)
+>>>>>>> 928bdfa (collision player fixed)
 
 showPlayer :: GameState -> Picture
 showPlayer gstate = case player gstate of
@@ -43,7 +47,11 @@ showPlayer gstate = case player gstate of
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of
+<<<<<<< HEAD
   (Blinky (x, y)) -> translate x y (color green (circle 16))
+=======
+  (Blinky (x, y)) -> translate x y (color green (circle 5))
+>>>>>>> 928bdfa (collision player fixed)
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (\tile -> loadTile tile textures) m
