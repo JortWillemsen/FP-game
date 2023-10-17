@@ -89,3 +89,6 @@ findTileInMaze [] p = Wall p Nothing
 findTileInMaze (t : ts) p
   | pos t == p = t
   | otherwise = findTileInMaze ts p
+
+getMazeSize :: Maze -> Position
+getMazeSize = foldr (max . pos) (0, 0)
