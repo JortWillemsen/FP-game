@@ -3,10 +3,12 @@ module Player where
 import Maze
 import Move
 
-data Player = PuckMan Position [InputBuffer]
-            | MsPuckMan Position [InputBuffer]
-            | JrPuckMan Position [InputBuffer]
-            | BabyPuckMan Position [InputBuffer]
+data Direction = L | R | U | D 
+
+data Player = PuckMan Position [InputBuffer] Direction 
+            | MsPuckMan Position [InputBuffer] Direction
+            | JrPuckMan Position [InputBuffer] Direction 
+            | BabyPuckMan Position [InputBuffer] Direction 
 
 data Toggled = Depressed | Released 
                deriving Eq
@@ -14,7 +16,7 @@ data Toggled = Depressed | Released
 type InputBuffer = (Char, Toggled, Association)
 
 resetInputBuffer :: Player -> Player
-resetInputBuffer (PuckMan pos ibs) = PuckMan pos inputBufferWASD
+resetInputBuffer (PuckMan pos ibs L) = PuckMan pos inputBufferWASD L
 
 inputBufferWASD :: [InputBuffer]
 inputBufferWASD = [('w', Released, GoUp), 

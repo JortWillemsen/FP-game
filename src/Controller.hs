@@ -6,7 +6,7 @@ import Graphics.Gloss.Interface.IO.Game
 import Model
 import Maze
 import Move (Association (..), Position, down, getMove, left, right, up, Move)
-import Player (InputBuffer, Player (PuckMan), Toggled (Depressed, Released), resetInputBuffer)
+import Player (InputBuffer, Player (PuckMan), Toggled (Depressed, Released), resetInputBuffer, Direction (..))
 import System.Random
 import World
 
@@ -27,14 +27,12 @@ step secs ws@WorldState {gameState = state}
           { gameState =
               state
                 { player = makePlayerMove (player state) (maze state),
-                  blinky = let (Blinky pos) = moveAlgorithm (blinky state) (player state)
-                               (Blinky oldPos) = blinky state
-                           in Blinky (makeMove (oldPos, pos) (maze state)),
+                  blinky = moveAlgorithm (blinky state) (player state),
                   ticks = ticks state + secs
                 }
           }
   where
-    inputBuffer (PuckMan pos ib) = [y | (_, y, _) <- ib]
+    inputBuffer (PuckMan _ ib _) = [y | (_, y, _) <- ib]
 
 -- If input is received, return changed game state
 input :: Event -> WorldState -> IO WorldState
@@ -61,7 +59,7 @@ makeMove (pos, potentialPos) m | moveAllowed potentialPos m = potentialPos
                                     _ -> moveAllowed pos' ts
             where
                 hitbox :: Position -> [Position]
-                hitbox p@(x, y) = [p, (x, y+tileSize-1), (x+tileSize-1, y+tileSize-1), (x+tileSize-1, y)]
+                hitbox p@(x, y) = [p, (x, y+tileSize-0.1), (x+tileSize-0.1, y+tileSize-0.1), (x+tileSize-0.1, y)]
 
                 intersect :: [Position] -> [Position] -> Bool
                 intersect [bL, tL, tR, bR] s = inSquare bL s || inSquare tL s || inSquare tR s || inSquare bR s
@@ -72,19 +70,30 @@ makeMove (pos, potentialPos) m | moveAllowed potentialPos m = potentialPos
 
 -- when a key is pressed, move player based on which key is pressed
 makePlayerMove :: Player -> Maze -> Player
-makePlayerMove (PuckMan pos ibs) m = PuckMan (move ibs pos) ibs
+makePlayerMove (PuckMan pos ibs d) m = move ibs pos
   where
-    -- applies a move to a position
-    move :: [InputBuffer] -> (Position -> Position)
-    move ((_, t, a) : ibs') pos'
-      | t == Depressed = makeMove (pos', getMove a pos') m
-      | otherwise = move ibs' pos'
-    move [] pos' = pos'
+    -- applies a move to a positionS
+    move :: [InputBuffer] -> Position -> Player
+    move ((_, t, a) : ibs') pos' | t == Depressed = if makeMove (pos', getMove a pos') m /= getMove a pos' 
+                                                      then PuckMan (makeMove (pos', getMove (getLastMove d) pos') m) ibs d
+                                                      else PuckMan (getMove a pos') ibs (newDirection a)
+                                 | otherwise = move ibs' pos' 
+    move [] pos' = PuckMan (makeMove (pos', getMove (getLastMove d) pos') m) ibs d
+
+    newDirection GoRight = R 
+    newDirection GoLeft = L 
+    newDirection GoUp = U 
+    newDirection GoDown = D
+
+    getLastMove R = GoRight 
+    getLastMove L = GoLeft 
+    getLastMove U = GoUp 
+    getLastMove D = GoDown
 
 
 -- Updates the input buffer of a player when a key is pressed
 updateInputBuffer :: Char -> Player -> Player
-updateInputBuffer c (PuckMan pos ibs) = PuckMan pos (updateInputBuffer' c ibs)
+updateInputBuffer c (PuckMan pos ibs d) = PuckMan pos (updateInputBuffer' c ibs) d
   where
     -- Updates the input buffer list of a player, making sure one key is depressed at a time
     updateInputBuffer' :: Char -> [InputBuffer] -> [InputBuffer]

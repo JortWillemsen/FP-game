@@ -1,6 +1,7 @@
 module Model where
   
-import Player ( Player(PuckMan), Toggled (Released), inputBufferWASD )
+
+import Player ( Player(PuckMan), Toggled (Released), inputBufferWASD, Direction (..) )
 import Move
 import Ghost (Ghost (Blinky))
 import Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
@@ -25,16 +26,8 @@ data GameState = GameState {
 
 -- Takes level for first time maze generation.
 initialState :: [String] -> GameState
-<<<<<<< HEAD
-<<<<<<< HEAD
-initialState level = GameState maze Play 0 (PuckMan playerSpawn inputBufferWASD) (Blinky ghostSpawn) where
+initialState level = GameState maze Play 0 (PuckMan playerSpawn inputBufferWASD L) (Blinky ghostSpawn) where
   maze = loadMaze level
   playerSpawn = pos $ head $ getSpawns PlayerSpawn maze
   ghostSpawn = pos $ head $ getSpawns GhostSpawn maze
 
-=======
-initialState level = GameState (loadMaze level) Play 0 (PuckMan (110, 80) inputBufferWASD) (Blinky (0, 0))
->>>>>>> 2a5a71d (start collision)
-=======
-initialState level = GameState (loadMaze level) Play 0 (PuckMan (110, 70) inputBufferWASD) (Blinky (110, 20))
->>>>>>> 928bdfa (collision player fixed)
