@@ -5,7 +5,7 @@ module View where
 import Data.Maybe (mapMaybe)
 import Ghost (Ghost (..))
 import Graphics.Gloss
-import Maze (CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
+import Maze (CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize, Collectable (Energizer, Dot))
 import Model
 import Move
 import Player
@@ -37,12 +37,16 @@ showGhost gstate = case blinky gstate of
   (Blinky (x, y)) -> translate x y (color green (circle 20))
 
 showMaze :: GameState -> AllTextures -> [Picture]
-showMaze s@GameState {maze = m} textures@AllTextures {wallTextures = wTextures} = mapMaybe (\tile -> loadTile tile wTextures) m
+showMaze s@GameState {maze = m} textures = mapMaybe (\tile -> loadTile tile textures) m
 
-loadTile :: Tile -> WallTextures -> Maybe Picture
-loadTile (Floor _) _ = Nothing
-loadTile (Wall (x, y) Nothing) wt = Nothing
-loadTile (Wall (x, y) (Just wtype)) wt = Just $ translate x y (f wtype $ wt)
+loadTile :: Tile -> AllTextures -> Maybe Picture
+loadTile (Floor (x, y) (Just cType)) textures = Just $ translate x y (f cType $ collectibleTextures textures) 
+  where
+    f Energizer = energizer
+    f Dot = dot
+loadTile (Floor _ _) _ = Nothing
+loadTile (Wall (x, y) Nothing) textures = Nothing
+loadTile (Wall (x, y) (Just wtype)) textures = Just $ translate x y (f wtype $ wallTextures textures)
   where
     f (Corner Nw) = cornerNw
     f (Corner Ne) = cornerNe

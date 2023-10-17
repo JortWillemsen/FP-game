@@ -5,7 +5,7 @@ import Move
 
 data Tile
   = Wall Position (Maybe WallType)
-  | Floor Position
+  | Floor Position (Maybe Collectable)
   deriving (Show)
 
 tileSize :: Float
@@ -14,7 +14,7 @@ tileSize = 16.0
 -- Allows for easy access
 pos :: Tile -> Position
 pos (Wall p _) = p
-pos (Floor p) = p
+pos (Floor p _) = p
 
 type Maze = [Tile]
 
@@ -51,30 +51,34 @@ loadRow vs y = loadRow' vs y 0
     loadRow' [] y x = []
     loadRow' (v : vs) y x
       | v == 'X' = Wall (x, y) Nothing : loadRow' vs y (x + tileSize)
-      | v == 'O' = Floor (x, y) : loadRow' vs y (x + tileSize)
+      | v == 'O' = Floor (x, y) (Just Dot) : loadRow' vs y (x + tileSize)
+      | v == 'E' = Floor (x, y) (Just Energizer) : loadRow' vs y (x + tileSize)
+      | v == 'P' = Floor (x, y) Nothing : loadRow' vs y (x + tileSize)
+      | v == 'G' = Floor (x, y) Nothing : loadRow' vs y (x + tileSize)
+      | v == 'F' = Floor (x, y) (Just Dot) : loadRow' vs y (x + tileSize)
 
 addWallTypesToMaze :: Maze -> Maze
 addWallTypesToMaze m = map (addWallTypeToTile m) m
 
 addWallTypeToTile :: Maze -> Tile -> Tile
-addWallTypeToTile m (Floor p) = Floor p
+addWallTypeToTile m (Floor p c) = Floor p c
 addWallTypeToTile m (Wall p _) = case getNeighbouringTiles m p of
-  (Wall _ _, Wall _ _, Wall _ _, Floor _) -> Wall p $ Just (Edge S)
+  (Wall _ _, Wall _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Edge S)
   (Wall _ _, Wall _ _, Wall _ _, Wall _ _) -> Wall p $ Nothing
-  (Floor _, Floor _, Floor _, Floor _) -> Wall p $ Just Contained
-  (Wall _ _, Wall _ _, Floor _, Wall _ _) -> Wall p $ Just (Edge E)
-  (Wall _ _, Floor _, Wall _ _, Wall _ _) -> Wall p $ Just (Edge W)
-  (Floor _, Wall _ _, Wall _ _, Wall _ _) -> Wall p $ Just (Edge N)
-  (Floor _, Floor _, Wall _ _, Wall _ _) -> Wall p $ Just (Corner Nw)
-  (Wall _ _, Wall _ _, Floor _, Floor _) -> Wall p $ Just (Corner Se)
-  (Floor _, Wall _ _, Floor _, Wall _ _) -> Wall p $ Just (Corner Ne)
-  (Wall _ _, Floor _, Wall _ _, Floor _) -> Wall p $ Just (Corner Sw)
-  (Floor _, Wall _ _, Wall _ _, Floor _) -> Wall p $ Just (Pipe H)
-  (Wall _ _, Floor _, Floor _, Wall _ _) -> Wall p $ Just (Pipe V)
-  (Floor _, Floor _, Floor _, Wall _ _) -> Wall p $ Just (Stump N)
-  (Wall _ _, Floor _, Floor _, Floor _) -> Wall p $ Just (Stump S)
-  (Floor _, Wall _ _, Floor _, Floor _) -> Wall p $ Just (Stump E)
-  (Floor _, Floor _, Wall _ _, Floor _) -> Wall p $ Just (Stump W)
+  (Floor _ _, Floor _ _, Floor _ _, Floor _ _) -> Wall p $ Just Contained
+  (Wall _ _, Wall _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Edge E)
+  (Wall _ _, Floor _ _, Wall _ _, Wall _ _) -> Wall p $ Just (Edge W)
+  (Floor _ _, Wall _ _, Wall _ _, Wall _ _) -> Wall p $ Just (Edge N)
+  (Floor _ _, Floor _ _, Wall _ _, Wall _ _) -> Wall p $ Just (Corner Nw)
+  (Wall _ _, Wall _ _, Floor _ _, Floor _ _) -> Wall p $ Just (Corner Se)
+  (Floor _ _, Wall _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Corner Ne)
+  (Wall _ _, Floor _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Corner Sw)
+  (Floor _ _, Wall _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Pipe H)
+  (Wall _ _, Floor _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Pipe V)
+  (Floor _ _, Floor _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Stump N)
+  (Wall _ _, Floor _ _, Floor _ _, Floor _ _) -> Wall p $ Just (Stump S)
+  (Floor _ _, Wall _ _, Floor _ _, Floor _ _) -> Wall p $ Just (Stump E)
+  (Floor _ _, Floor _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Stump W)
 
 getNeighbouringTiles :: Maze -> Position -> (Tile, Tile, Tile, Tile)
 getNeighbouringTiles m (x, y) =
