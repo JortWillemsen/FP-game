@@ -3,7 +3,7 @@ module Model where
 import Player ( Player(PuckMan), Toggled (Released), inputBufferWASD )
 import Move ()
 import Ghost (Ghost (Blinky))
-import Maze (Maze, basicMaze, loadMaze)
+import Maze (Maze, loadMaze)
 
 interval :: Float
 interval = 0.033

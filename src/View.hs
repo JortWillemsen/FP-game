@@ -32,7 +32,7 @@ showMaze s@GameState {maze = m} textures@AllTextures {wallTextures = wTextures} 
 loadTile :: Tile -> WallTextures -> Maybe Picture
 loadTile (Floor _) _ = Nothing
 loadTile (Wall (x, y) Nothing) wt = Nothing
-loadTile (Wall (x, y) (Just wtype)) wt = Just $ translate (x * textureSize) (y * textureSize) (f wtype $ wt)
+loadTile (Wall (x, y) (Just wtype)) wt = Just $ translate x y (f wtype $ wt)
   where
     f (Corner Nw) = cornerNw
     f (Corner Ne) = cornerNe

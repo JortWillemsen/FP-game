@@ -8,6 +8,9 @@ data Tile
   | Floor Position
   deriving (Show)
 
+tileSize :: Float
+tileSize = 16.0
+
 -- Allows for easy access
 pos :: Tile -> Position
 pos (Wall p _) = p
@@ -35,45 +38,11 @@ data Collectable
   | Fruit
   deriving (Show)
 
--- XXXXX
--- XOOOX
--- XOXOX
--- XOOOX
--- XXXXX
-basicMaze :: Maze
-basicMaze =
-  [ Wall (0.0, 4.0) (Just (Corner Nw)),
-    Wall (1.0, 4.0) (Just (Pipe H)),
-    Wall (2.0, 4.0) (Just (Pipe H)),
-    Wall (3.0, 4.0) (Just (Pipe H)),
-    Wall (4.0, 4.0) (Just (Corner Ne)),
-    Wall (0.0, 3.0) (Just (Pipe V)),
-    Floor (1.0, 3.0),
-    Floor (2.0, 3.0),
-    Floor (3.0, 3.0),
-    Wall (4.0, 3.0) (Just (Pipe V)),
-    Wall (0.0, 2.0) (Just (Pipe V)),
-    Floor (1.0, 2.0),
-    Wall (2.0, 2.0) (Just Contained),
-    Floor (3.0, 2.0),
-    Wall (4.0, 2.0) (Just (Pipe V)),
-    Wall (0.0, 1.0) (Just (Pipe V)),
-    Floor (1.0, 1.0),
-    Floor (2.0, 1.0),
-    Floor (3.0, 1.0),
-    Wall (4.0, 1.0) (Just (Pipe V)),
-    Wall (0.0, 0.0) (Just (Corner Sw)),
-    Wall (1.0, 0.0) (Just (Pipe H)),
-    Wall (2.0, 0.0) (Just (Pipe H)),
-    Wall (3.0, 0.0) (Just (Pipe H)),
-    Wall (4.0, 0.0) (Just (Corner Se))
-  ]
-
 loadMaze :: [String] -> Maze
 loadMaze rs = addWallTypesToMaze $ loadMaze' (reverse rs) 0
   where
     loadMaze' [] _ = []
-    loadMaze' (r : rs) y = loadRow r y ++ loadMaze' rs (y + 1)
+    loadMaze' (r : rs) y = loadRow r y ++ loadMaze' rs (y + tileSize)
 
 -- Takes a line of input and a y value in the maze and delivers a row with correct positions
 loadRow :: [Char] -> Float -> [Tile]
@@ -81,8 +50,8 @@ loadRow vs y = loadRow' vs y 0
   where
     loadRow' [] y x = []
     loadRow' (v : vs) y x
-      | v == 'X' = Wall (x, y) Nothing : loadRow' vs y (x + 1)
-      | v == 'O' = Floor (x, y) : loadRow' vs y (x + 1)
+      | v == 'X' = Wall (x, y) Nothing : loadRow' vs y (x + tileSize)
+      | v == 'O' = Floor (x, y) : loadRow' vs y (x + tileSize)
 
 addWallTypesToMaze :: Maze -> Maze
 addWallTypesToMaze m = map (addWallTypeToTile m) m
@@ -109,10 +78,10 @@ addWallTypeToTile m (Wall p _) = case getNeighbouringTiles m p of
 
 getNeighbouringTiles :: Maze -> Position -> (Tile, Tile, Tile, Tile)
 getNeighbouringTiles m (x, y) =
-  ( findTileInMaze m (x, y + 1),
-    findTileInMaze m (x - 1, y),
-    findTileInMaze m (x + 1, y),
-    findTileInMaze m (x, y - 1)
+  ( findTileInMaze m (x, y + tileSize),
+    findTileInMaze m (x - tileSize, y),
+    findTileInMaze m (x + tileSize, y),
+    findTileInMaze m (x, y - tileSize)
   )
 
 findTileInMaze :: Maze -> Position -> Tile
