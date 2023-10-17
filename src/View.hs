@@ -14,7 +14,7 @@ textureSize :: Float
 textureSize = 16.0
 
 view :: WorldState -> IO Picture
-view ws = return . showAll $ ws
+view = return . showAll
 
 showAll :: WorldState -> Picture
 showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state, showGhost state] ++ (showMaze state allTextures)
@@ -27,12 +27,12 @@ showGhost gstate = case blinky gstate of
   (Blinky (x, y)) -> translate x y (color green (circle 20))
 
 showMaze :: GameState -> AllTextures -> [Picture]
-showMaze s@GameState {maze = m} textures@AllTextures {wallTextures = wTextures} = concatMap (\row -> mapMaybe (\tile -> loadTile tile wTextures) row) m
+showMaze s@GameState {maze = m} textures@AllTextures {wallTextures = wTextures} = mapMaybe (\tile -> loadTile tile wTextures) m
 
 loadTile :: Tile -> WallTextures -> Maybe Picture
 loadTile (Floor _) _ = Nothing
-loadTile (Wall (x, y) Nothing) wt = Just $ translate (x * textureSize) (y * textureSize) (contained  wt)
-loadTile (Wall (x, y) (Just tile)) wt = Just $ translate (x * textureSize) (y * textureSize) (f tile $ wt)
+loadTile (Wall (x, y) Nothing) wt = Nothing
+loadTile (Wall (x, y) (Just wtype)) wt = Just $ translate (x * textureSize) (y * textureSize) (f wtype $ wt)
   where
     f (Corner Nw) = cornerNw
     f (Corner Ne) = cornerNe
