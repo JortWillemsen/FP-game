@@ -5,7 +5,7 @@ import Move
 
 data Tile
   = Wall Position (Maybe WallType)
-  | Floor Position (Maybe Collectable)
+  | Floor Position (Maybe Collectable) (Maybe SpawnPoint)
   deriving (Show)
 
 tileSize :: Float
@@ -14,9 +14,15 @@ tileSize = 16.0
 -- Allows for easy access
 pos :: Tile -> Position
 pos (Wall p _) = p
-pos (Floor p _) = p
+pos (Floor p _ _) = p
 
 type Maze = [Tile]
+
+data SpawnPoint
+  = FruitSpawn
+  | PlayerSpawn
+  | GhostSpawn
+  deriving (Eq, Show)
 
 data CornerDirection = Nw | Ne | Sw | Se deriving (Show)
 
@@ -51,34 +57,34 @@ loadRow vs y = loadRow' vs y 0
     loadRow' [] y x = []
     loadRow' (v : vs) y x
       | v == 'X' = Wall (x, y) Nothing : loadRow' vs y (x + tileSize)
-      | v == 'O' = Floor (x, y) (Just Dot) : loadRow' vs y (x + tileSize)
-      | v == 'E' = Floor (x, y) (Just Energizer) : loadRow' vs y (x + tileSize)
-      | v == 'P' = Floor (x, y) Nothing : loadRow' vs y (x + tileSize)
-      | v == 'G' = Floor (x, y) Nothing : loadRow' vs y (x + tileSize)
-      | v == 'F' = Floor (x, y) (Just Dot) : loadRow' vs y (x + tileSize)
+      | v == 'O' = Floor (x, y) (Just Dot) Nothing : loadRow' vs y (x + tileSize)
+      | v == 'E' = Floor (x, y) (Just Energizer) Nothing : loadRow' vs y (x + tileSize)
+      | v == 'P' = Floor (x, y) Nothing (Just PlayerSpawn) : loadRow' vs y (x + tileSize)
+      | v == 'G' = Floor (x, y) Nothing (Just GhostSpawn) : loadRow' vs y (x + tileSize)
+      | v == 'F' = Floor (x, y) (Just Dot) (Just FruitSpawn) : loadRow' vs y (x + tileSize)
 
 addWallTypesToMaze :: Maze -> Maze
 addWallTypesToMaze m = map (addWallTypeToTile m) m
 
 addWallTypeToTile :: Maze -> Tile -> Tile
-addWallTypeToTile m (Floor p c) = Floor p c
+addWallTypeToTile m (Floor p c s) = Floor p c s
 addWallTypeToTile m (Wall p _) = case getNeighbouringTiles m p of
-  (Wall _ _, Wall _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Edge S)
-  (Wall _ _, Wall _ _, Wall _ _, Wall _ _) -> Wall p $ Nothing
-  (Floor _ _, Floor _ _, Floor _ _, Floor _ _) -> Wall p $ Just Contained
-  (Wall _ _, Wall _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Edge E)
-  (Wall _ _, Floor _ _, Wall _ _, Wall _ _) -> Wall p $ Just (Edge W)
-  (Floor _ _, Wall _ _, Wall _ _, Wall _ _) -> Wall p $ Just (Edge N)
-  (Floor _ _, Floor _ _, Wall _ _, Wall _ _) -> Wall p $ Just (Corner Nw)
-  (Wall _ _, Wall _ _, Floor _ _, Floor _ _) -> Wall p $ Just (Corner Se)
-  (Floor _ _, Wall _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Corner Ne)
-  (Wall _ _, Floor _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Corner Sw)
-  (Floor _ _, Wall _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Pipe H)
-  (Wall _ _, Floor _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Pipe V)
-  (Floor _ _, Floor _ _, Floor _ _, Wall _ _) -> Wall p $ Just (Stump N)
-  (Wall _ _, Floor _ _, Floor _ _, Floor _ _) -> Wall p $ Just (Stump S)
-  (Floor _ _, Wall _ _, Floor _ _, Floor _ _) -> Wall p $ Just (Stump E)
-  (Floor _ _, Floor _ _, Wall _ _, Floor _ _) -> Wall p $ Just (Stump W)
+  (Wall {}, Wall {}, Wall {}, Floor {}) -> Wall p $ Just (Edge S)
+  (Wall {}, Wall {}, Wall {}, Wall {}) -> Wall p $ Nothing
+  (Floor {}, Floor {}, Floor {}, Floor {}) -> Wall p $ Just Contained
+  (Wall {}, Wall {}, Floor {}, Wall {}) -> Wall p $ Just (Edge E)
+  (Wall {}, Floor {}, Wall {}, Wall {}) -> Wall p $ Just (Edge W)
+  (Floor {}, Wall {}, Wall {}, Wall {}) -> Wall p $ Just (Edge N)
+  (Floor {}, Floor {}, Wall {}, Wall {}) -> Wall p $ Just (Corner Nw)
+  (Wall {}, Wall {}, Floor {}, Floor {}) -> Wall p $ Just (Corner Se)
+  (Floor {}, Wall {}, Floor {}, Wall {}) -> Wall p $ Just (Corner Ne)
+  (Wall {}, Floor {}, Wall {}, Floor {}) -> Wall p $ Just (Corner Sw)
+  (Floor {}, Wall {}, Wall {}, Floor {}) -> Wall p $ Just (Pipe H)
+  (Wall {}, Floor {}, Floor {}, Wall {}) -> Wall p $ Just (Pipe V)
+  (Floor {}, Floor {}, Floor {}, Wall {}) -> Wall p $ Just (Stump N)
+  (Wall {}, Floor {}, Floor {}, Floor {}) -> Wall p $ Just (Stump S)
+  (Floor {}, Wall {}, Floor {}, Floor {}) -> Wall p $ Just (Stump E)
+  (Floor {}, Floor {}, Wall {}, Floor {}) -> Wall p $ Just (Stump W)
 
 getNeighbouringTiles :: Maze -> Position -> (Tile, Tile, Tile, Tile)
 getNeighbouringTiles m (x, y) =
@@ -96,3 +102,10 @@ findTileInMaze (t : ts) p
 
 getMazeSize :: Maze -> Position
 getMazeSize = foldr (max . pos) (0, 0)
+
+isSpawn :: SpawnPoint -> Tile -> Bool
+isSpawn spawnPoint (Floor _ _ (Just tileSpawn)) = tileSpawn == spawnPoint
+isSpawn _ _ = False
+
+getSpawns :: SpawnPoint -> Maze -> [Tile]
+getSpawns point = filter (isSpawn point)
