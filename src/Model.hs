@@ -16,7 +16,7 @@ pauseGame :: IsPaused -> IsPaused -- HIER OF CONTROLLER?
 pauseGame p | p == Pause = Play
             | otherwise  = Pause
 data GameState = GameState {
-                    maze         :: Maze
+                    maze       :: Maze
                   , isPaused   :: IsPaused
                   , ticks      :: Float
                   , player     :: Player
@@ -25,8 +25,12 @@ data GameState = GameState {
 
 -- Takes level for first time maze generation.
 initialState :: [String] -> GameState
+<<<<<<< HEAD
 initialState level = GameState maze Play 0 (PuckMan playerSpawn inputBufferWASD) (Blinky ghostSpawn) where
   maze = loadMaze level
   playerSpawn = pos $ head $ getSpawns PlayerSpawn maze
   ghostSpawn = pos $ head $ getSpawns GhostSpawn maze
 
+=======
+initialState level = GameState (loadMaze level) Play 0 (PuckMan (110, 80) inputBufferWASD) (Blinky (0, 0))
+>>>>>>> 2a5a71d (start collision)

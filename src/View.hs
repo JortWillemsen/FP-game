@@ -27,11 +27,19 @@ view :: WorldState -> IO Picture
 view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll ws
 
 showAll :: WorldState -> Picture
+<<<<<<< HEAD
 showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state allTextures, showGhost state] ++ (showMaze state allTextures)
 
 showPlayer :: GameState -> AllTextures -> Picture
 showPlayer gstate textures = case player gstate of
   (PuckMan (x, y) _) -> translate x y $ playerTexture textures
+=======
+showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state] ++ (showMaze state allTextures)
+
+showPlayer :: GameState -> Picture
+showPlayer gstate = case player gstate of
+  (PuckMan (x, y) _) -> translate x y (color yellow (circle 5))
+>>>>>>> 2a5a71d (start collision)
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of
