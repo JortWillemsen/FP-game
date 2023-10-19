@@ -1,11 +1,12 @@
 module Controller where
 
-import Ghost (moveAlgorithm)
+import Ghost (moveAlgorithm, Ghost (Blinky))
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Model
-import Move (Association (..), Position, down, getMove, left, right, up)
-import Player (InputBuffer, Player (PuckMan), Toggled (Depressed, Released), resetInputBuffer)
+import Maze
+import Move (Association (..), Position, down, getMove, left, right, up, Move)
+import Player (InputBuffer, Player (PuckMan), Toggled (Depressed, Released), resetInputBuffer, Direction (..))
 import System.Random
 import World
 
@@ -25,13 +26,13 @@ step secs ws@WorldState {gameState = state}
         ws
           { gameState =
               state
-                { player = makeMove (player state),
+                { player = makePlayerMove (player state) (maze state),
                   blinky = moveAlgorithm (blinky state) (player state),
                   ticks = ticks state + secs
                 }
           }
   where
-    inputBuffer (PuckMan pos ib) = [y | (_, y, _) <- ib]
+    inputBuffer (PuckMan _ ib _) = [y | (_, y, _) <- ib]
 
 -- If input is received, return changed game state
 input :: Event -> WorldState -> IO WorldState
@@ -45,20 +46,54 @@ inputKey (EventKey (Char c) t _ _) state
   | otherwise = state {player = updateInputBuffer c (player state)}
 inputKey _ state = state
 
+
+makeMove :: Move -> Maze -> Position
+makeMove (pos, potentialPos) m | moveAllowed potentialPos m = potentialPos
+                               | otherwise = pos
+    where
+        moveAllowed :: Position -> Maze -> Bool
+        moveAllowed _ [] = True
+        moveAllowed pos' (t:ts) = case t of
+                                    (Wall wPos _) | hitbox pos' `intersect` hitbox wPos -> False
+                                                  | otherwise -> moveAllowed pos' ts
+                                    _ -> moveAllowed pos' ts
+            where
+                hitbox :: Position -> [Position]
+                hitbox p@(x, y) = [p, (x, y+tileSize-0.1), (x+tileSize-0.1, y+tileSize-0.1), (x+tileSize-0.1, y)]
+
+                intersect :: [Position] -> [Position] -> Bool
+                intersect [bL, tL, tR, bR] s = inSquare bL s || inSquare tL s || inSquare tR s || inSquare bR s
+                    where
+                        inSquare :: Position -> [Position] -> Bool
+                        inSquare (x, y) [(bLX, bLY), _, (tRX, tRY), _] = x > bLX && y > bLY && x <= tRX && y <= tRY
+
+
 -- when a key is pressed, move player based on which key is pressed
-makeMove :: Player -> Player
-makeMove (PuckMan pos ibs) = PuckMan (move ibs pos) ibs
+makePlayerMove :: Player -> Maze -> Player
+makePlayerMove (PuckMan pos ibs d) m = move ibs pos
   where
-    -- applies a move to a position
-    move :: [InputBuffer] -> (Position -> Position)
-    move ((_, t, a) : ibs') pos'
-      | t == Depressed = getMove a pos'
-      | otherwise = move ibs' pos'
-    move [] pos' = pos'
+    -- applies a move to a positionS
+    move :: [InputBuffer] -> Position -> Player
+    move ((_, t, a) : ibs') pos' | t == Depressed = if makeMove (pos', getMove a pos') m /= getMove a pos' 
+                                                      then PuckMan (makeMove (pos', getMove (getLastMove d) pos') m) ibs d
+                                                      else PuckMan (getMove a pos') ibs (newDirection a)
+                                 | otherwise = move ibs' pos' 
+    move [] pos' = PuckMan (makeMove (pos', getMove (getLastMove d) pos') m) ibs d
+
+    newDirection GoRight = R 
+    newDirection GoLeft = L 
+    newDirection GoUp = U 
+    newDirection GoDown = D
+
+    getLastMove R = GoRight 
+    getLastMove L = GoLeft 
+    getLastMove U = GoUp 
+    getLastMove D = GoDown
+
 
 -- Updates the input buffer of a player when a key is pressed
 updateInputBuffer :: Char -> Player -> Player
-updateInputBuffer c (PuckMan pos ibs) = PuckMan pos (updateInputBuffer' c ibs)
+updateInputBuffer c (PuckMan pos ibs d) = PuckMan pos (updateInputBuffer' c ibs) d
   where
     -- Updates the input buffer list of a player, making sure one key is depressed at a time
     updateInputBuffer' :: Char -> [InputBuffer] -> [InputBuffer]

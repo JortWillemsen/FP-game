@@ -31,7 +31,7 @@ showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [
 
 showPlayer :: GameState -> AllTextures -> Picture
 showPlayer gstate textures = case player gstate of
-  (PuckMan (x, y) _) -> translate x y $ playerTexture textures
+  (PuckMan (x, y) _ _) -> translate x y $ playerTexture textures
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of

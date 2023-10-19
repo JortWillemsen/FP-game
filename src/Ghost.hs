@@ -1,6 +1,7 @@
 module Ghost where
-import Move ( Position )
 import Player ( Player(PuckMan) )
+import Maze
+import Move 
 
 data Ghost = Blinky Position
             | Pinky Position
@@ -8,12 +9,12 @@ data Ghost = Blinky Position
             | Clyde Position
 
 moveAlgorithm :: Ghost -> Player -> Ghost
-moveAlgorithm (Blinky (xg, yg)) (PuckMan (xp, yp) _) | xp == xg && yg == yp                 = Blinky (xg, yg)
-                                                     | yg == yp                             = Blinky (x', yg)
-                                                     | (xp - 2.5) == xg || xg == (xp + 2.5) = Blinky (xg, y')
-                                                     | otherwise                            = Blinky (x', y')
+moveAlgorithm (Blinky (xg, yg)) (PuckMan (xp, yp) _ _) | xp == xg && yg == yp             = Blinky (xg, yg)
+                                                       | yg == yp                         = Blinky (x', yg)
+                                                       | (xp - 1) == xg || xg == (xp + 1) = Blinky (xg, y')
+                                                       | otherwise                        = Blinky (x', y')
   where
-    x' | xp <= xg  = xg - 2.5 
-       | otherwise = xg + 2.5
-    y' | yp >= yg  = yg + 2.5 
-       | otherwise = yg - 2.5
+    x' | xp <= xg  = xg - 1
+       | otherwise = xg + 1
+    y' | yp >= yg  = yg + 1
+       | otherwise = yg - 1
