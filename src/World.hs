@@ -18,11 +18,17 @@ initialWorldState =
 
 type Texture = Picture
 
+data Animation = Animation Int [Texture]
+
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,
     collectibleTextures :: CollectibleTextures,
     playerTexture :: Texture
   }
+
+data AllAnimations = AllAnimations {
+  eat :: Animation
+}
 
 data WallTextures = WallTextures
   { cornerNw :: Texture,
@@ -51,7 +57,7 @@ data CollectibleTextures = CollectibleTextures
 loadTextures :: IO AllTextures
 loadTextures =
   do
-    playerTexture <- loadBMP "Assets/walls/wall_contained.bmp"
+    playerTexture <- loadBMP "Assets/player/puck-man.bmp"
     collectibleTextures <-
       CollectibleTextures
         <$> loadBMP "Assets/collectibles/dot.bmp"
