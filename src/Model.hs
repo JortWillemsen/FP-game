@@ -7,6 +7,11 @@ import Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), po
 import Player
 import Score
 
+type Time = Float
+
+interval :: Time
+interval = 0.033
+
 data IsPaused = Play | Pause 
                 deriving (Show, Eq)
 

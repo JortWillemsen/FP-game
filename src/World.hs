@@ -2,11 +2,13 @@ module World where
 
 import Graphics.Gloss
 import Model
+import Animation
 import File 
 
 data WorldState = WorldState
   { gameState :: GameState,
-    textures :: AllTextures
+    textures :: AllTextures,
+    animation :: AllAnimations
   }
 
 initialWorldState :: IO WorldState
@@ -14,11 +16,7 @@ initialWorldState =
   do
     textures <- loadTextures
     level <- loadLevel
-    return $ WorldState (initialState level) textures
-
-type Texture = Picture
-
-data Animation = Animation Int [Texture]
+    WorldState (initialState level) textures <$> loadAnimations
 
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,
@@ -26,9 +24,9 @@ data AllTextures = AllTextures
     playerTexture :: Texture
   }
 
-data AllAnimations = AllAnimations {
-  eat :: Animation
-}
+data AllAnimations = AllAnimations
+  { eat :: Animation
+  }
 
 data WallTextures = WallTextures
   { cornerNw :: Texture,
@@ -53,6 +51,14 @@ data CollectibleTextures = CollectibleTextures
     energizer :: Texture
   }
 
+loadAnimations :: IO AllAnimations
+loadAnimations =
+  do
+    eatFrames <- mapM loadBMP ["Assets/animations/eat/frame1.bmp", "Assets/animations/eat/frame2.bmp", "Assets/animations/eat/frame3.bmp"]
+
+    let eat = Animation 0.5 eatFrames
+
+    return $ AllAnimations eat
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures
 loadTextures =
