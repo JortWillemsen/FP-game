@@ -27,8 +27,3 @@ animateTexture (Animation d frames) e = frames!!cf where
   -- Calculates what frame we are on based on the current duration
   cf :: Int
   cf = floor (tss d e / dpf d (length frames))
-  
-
-
--- 30 seconden sinds begin van applicatie, animatie duurt 4 seconden
-

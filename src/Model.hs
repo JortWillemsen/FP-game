@@ -23,6 +23,7 @@ data GameState = GameState {
                     maze       :: Maze
                   , isPaused   :: IsPaused
                   , score      :: Score
+                  , time       :: Time
                   , ticks      :: Float
                   , player     :: Player
                   , blinky     :: Ghost
@@ -30,7 +31,7 @@ data GameState = GameState {
 
 -- Takes level for first time maze generation.
 initialState :: [String] -> GameState
-initialState level = GameState maze Play ("", 0) 0 (Player PuckMan playerSpawn inputBufferWASD L) (Blinky ghostSpawn L) where
+initialState level = GameState maze Play ("", 0) 0 0 (Player PuckMan playerSpawn inputBufferWASD L) (Blinky ghostSpawn L) where
   maze = loadMaze level
   playerSpawn = pos $ head $ getSpawns PlayerSpawn maze
   ghostSpawn = pos $ head $ getSpawns GhostSpawn maze
