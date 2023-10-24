@@ -11,11 +11,13 @@ executable puck-man
   main-is:             Main.hs
   build-depends:       base >= 4 && < 5,
                        gloss,
+                       containers,
                        random
   hs-source-dirs:      src
   other-modules:       Controller
                      , Model
                      , View
+                     , Ai
                      , Maze
                      , Player
                      , Move

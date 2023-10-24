@@ -140,3 +140,13 @@ isSpawn _ _ = False
 
 getSpawns :: SpawnPoint -> Maze -> [Tile]
 getSpawns point = filter (isSpawn point)
+
+neighborsToList :: (Tile, Tile, Tile, Tile) -> [Tile]
+neighborsToList (a, b, c, d) = [a, b, c, d]
+
+floors :: Maze -> Maze
+floors = filter isFloor
+
+isFloor :: Tile -> Bool
+isFloor (Floor {}) = True
+isFloor _ = False
