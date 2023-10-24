@@ -10,12 +10,13 @@ import Model
 import Move
 import Player
 import World
+import Animation
 
 textureSize :: Float
 textureSize = 16.0
 
 scalingFactor :: Float
-scalingFactor = 1.0
+scalingFactor = 1.5
 
 calculateScreenSize :: WorldState -> (Int, Int)
 calculateScreenSize ws = let (x, y) = getMazeSize (maze $ gameState ws) in (round (x * scalingFactor), round (y * scalingFactor + 40))
@@ -27,11 +28,17 @@ view :: WorldState -> IO Picture
 view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll ws
 
 showAll :: WorldState -> Picture
-showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state allTextures, showGhost state] ++ showMaze state allTextures
+showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations} = Pictures $ [showPlayer state allAnimations, showGhost state] ++ (showMaze state allTextures)
 
-showPlayer :: GameState -> AllTextures -> Picture
-showPlayer gstate textures = case player gstate of
-  (Player PuckMan (x, y) _ _) -> translate x y $ playerTexture textures
+showPlayer :: GameState -> AllAnimations -> Picture
+showPlayer gstate animations = case player gstate of
+  (Player PuckMan (x, y) _ _) -> translate x y $ rotation $ animateTexture anim (time gstate) where
+    anim = eat animations
+    rotation = case direction $ player gstate of
+      U -> rotate (-90)
+      D -> rotate 90
+      L -> scale (-1) 1
+      R -> scale 1 1
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of

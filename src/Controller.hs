@@ -3,13 +3,13 @@ module Controller where
 import Ghost (Ghost (Blinky))
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
-import Model
 import Maze
-import Move (Association (..), Position, down, getMove, left, right, up, Move, directionToMove, moveToDirection)
-import System.Random
-import World
+import Model
+import Move (Association (..), Move, Position, directionToMove, down, getMove, left, moveToDirection, right, up)
 import Player
 import Score (updateScore)
+import System.Random
+import World
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
@@ -19,7 +19,8 @@ step interval ws@WorldState {gameState = state}
         ws
           { gameState =
               state
-                { ticks = ticks state + 1
+                { ticks = ticks state + 1,
+                  time = time state + interval
                 }
           }
   | otherwise =
@@ -31,7 +32,8 @@ step interval ws@WorldState {gameState = state}
                   score = fst updatedScore,
                   maze = snd updatedScore,
                   -- blinky = moveAlgorithm (blinky state) (player state) (maze state),
-                  ticks = ticks state + 1
+                  ticks = ticks state + 1,
+                  time = time state + interval
                 }
           }
   where
@@ -51,25 +53,26 @@ inputKey (EventKey (Char c) t _ _) state
 inputKey _ state = state
 
 makeMove :: Move -> Maze -> Position
-makeMove (pos, potentialPos) m | moveAllowed potentialPos m = potentialPos -- if move allowed, make move
-                               | otherwise = pos -- if move not allowed, stay where you are
-    where
-        moveAllowed :: Position -> Maze -> Bool -- check if move is allowed
-        moveAllowed _ [] = True
-        moveAllowed pos' (t:ts) = case t of
-                                    (Wall wPos _) | hitbox pos' `intersect` hitbox wPos -> False -- if moveable object intersects with a wall, move not allowed
-                                                  | otherwise -> moveAllowed pos' ts
-                                    _ -> moveAllowed pos' ts
-            where
-                hitbox :: Position -> [Position] -- TODO zou dit nog anders kunnen?
-                hitbox p@(x, y) = [p, (x, y+tileSize-0.1), (x+tileSize-0.1, y+tileSize-0.1), (x+tileSize-0.1, y)]
+makeMove (pos, potentialPos) m
+  | moveAllowed potentialPos m = potentialPos -- if move allowed, make move
+  | otherwise = pos -- if move not allowed, stay where you are
+  where
+    moveAllowed :: Position -> Maze -> Bool -- check if move is allowed
+    moveAllowed _ [] = True
+    moveAllowed pos' (t : ts) = case t of
+      (Wall wPos _)
+        | hitbox pos' `intersect` hitbox wPos -> False -- if moveable object intersects with a wall, move not allowed
+        | otherwise -> moveAllowed pos' ts
+      _ -> moveAllowed pos' ts
+      where
+        hitbox :: Position -> [Position] -- TODO zou dit nog anders kunnen?
+        hitbox p@(x, y) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
 
-                intersect :: [Position] -> [Position] -> Bool
-                intersect hitbox s = any (`inSquare` s) hitbox
-                    where
-                        inSquare :: Position -> [Position] -> Bool
-                        inSquare (x, y) [(bLX, bLY), _, (tRX, tRY), _] = x > bLX && y > bLY && x <= tRX && y <= tRY
-
+        intersect :: [Position] -> [Position] -> Bool
+        intersect hitbox s = any (`inSquare` s) hitbox
+          where
+            inSquare :: Position -> [Position] -> Bool
+            inSquare (x, y) [(bLX, bLY), _, (tRX, tRY), _] = x > bLX && y > bLY && x <= tRX && y <= tRY
 
 -- when a key is pressed, move player based on which key is pressed
 makePlayerMove :: Player -> Maze -> Player
@@ -77,12 +80,13 @@ makePlayerMove (Player s pos ibs d) m = move ibs pos
   where
     -- applies a move to a position
     move :: [InputBuffer] -> Position -> Player
-    move ((_, t, a) : ibs') pos' | t == Depressed = if makeMove (pos', getMove a pos') m /= getMove a pos' -- TODO ANDERS
-                                                      then Player s (makeMove (pos', getMove (directionToMove d) pos') m) ibs d
-                                                      else Player s (getMove a pos') ibs (moveToDirection a)
-                                 | otherwise = move ibs' pos'
+    move ((_, t, a) : ibs') pos'
+      | t == Depressed =
+          if makeMove (pos', getMove a pos') m /= getMove a pos' -- TODO ANDERS
+            then Player s (makeMove (pos', getMove (directionToMove d) pos') m) ibs d
+            else Player s (getMove a pos') ibs (moveToDirection a)
+      | otherwise = move ibs' pos'
     move [] pos' = Player PuckMan (makeMove (pos', getMove (directionToMove d) pos') m) ibs d
-
 
 -- updates the input buffer of a player when a key is pressed
 updateInputBuffer :: Char -> Player -> Player
