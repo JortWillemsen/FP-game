@@ -4,9 +4,9 @@ import Data.Maybe (fromMaybe, mapMaybe)
 import Move
 
 data Tile
-  = Wall Position (Maybe WallType)
-  | Floor Position (Maybe Collectable) (Maybe SpawnPoint)
-  deriving (Show)
+  = Floor Position (Maybe Collectable) (Maybe SpawnPoint)
+  | Wall Position (Maybe WallType)
+  deriving (Show, Ord, Eq)
 
 tileSize :: Float
 tileSize = 16.0
@@ -22,13 +22,13 @@ data SpawnPoint
   = FruitSpawn
   | PlayerSpawn
   | GhostSpawn
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
-data CornerDirection = Nw | Ne | Sw | Se deriving (Show)
+data CornerDirection = Nw | Ne | Sw | Se deriving (Show, Eq, Ord)
 
-data EdgeDirection = N | E | S | W deriving (Show)
+data EdgeDirection = N | E | S | W deriving (Show, Eq, Ord)
 
-data PipeDirection = H | V deriving (Show)
+data PipeDirection = H | V deriving (Show, Eq, Ord)
 
 data WallType
   = Corner CornerDirection
@@ -36,13 +36,31 @@ data WallType
   | Pipe PipeDirection
   | Stump EdgeDirection
   | Contained
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 data Collectable
   = Dot -- 10 points
   | Energizer -- 50 points
   | Fruit
-  deriving (Show)
+  deriving (Show, Eq, Ord)
+
+hasDot :: Maze -> Position -> Bool
+hasDot m p = case findTileInMaze m p of
+  (Floor _ Nothing _) -> False
+  (Floor _ (Just a) _) -> isDot a
+  _ -> False
+  where
+    isDot Dot = True
+    isDot _ = False
+
+removeDot :: Maze -> Position -> Maze
+removeDot m p = case findTileInMaze m p of
+  (Floor p (Just a) s) -> removeDot' m p 
+  where 
+    removeDot' (t@(Floor pos (Just a) s):ts) p | p == pos = Floor pos Nothing s : ts
+                                               | otherwise = t : removeDot' ts p 
+    removeDot' (t:ts) p = t : removeDot' ts p 
+
 
 loadMaze :: [String] -> Maze
 loadMaze rs = addWallTypesToMaze $ loadMaze' (reverse rs) 0
@@ -93,6 +111,19 @@ getNeighbouringTiles m (x, y) =
     findTileInMaze m (x + tileSize, y),
     findTileInMaze m (x, y - tileSize)
   )
+
+
+-- ANDERS
+getNeighbouringFloorTiles :: Maze -> Position -> [Tile]
+getNeighbouringFloorTiles m (x, y) = getFloorTiles [findTileInMaze m (x, y + tileSize),
+                                                    findTileInMaze m (x - tileSize, y),
+                                                    findTileInMaze m (x + tileSize, y),
+                                                    findTileInMaze m (x, y - tileSize)]
+    where
+      getFloorTiles [] = []
+      getFloorTiles (t:ts) = case t of
+        (Floor {}) -> t : getFloorTiles ts
+        _ -> getFloorTiles ts
 
 findTileInMaze :: Maze -> Position -> Tile
 findTileInMaze [] p = Wall p Nothing

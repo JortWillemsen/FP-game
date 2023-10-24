@@ -15,10 +15,10 @@ textureSize :: Float
 textureSize = 16.0
 
 scalingFactor :: Float
-scalingFactor = 2.0
+scalingFactor = 1.0
 
 calculateScreenSize :: WorldState -> (Int, Int)
-calculateScreenSize ws = let (x, y) = getMazeSize (maze $ gameState ws) in (round (x * scalingFactor), round (y * scalingFactor))
+calculateScreenSize ws = let (x, y) = getMazeSize (maze $ gameState ws) in (round (x * scalingFactor), round (y * scalingFactor + 40))
 
 offset :: (Int, Int) -> (Float, Float)
 offset (x, y) = (-(fromIntegral x / 2), -(fromIntegral y / 2))
@@ -27,18 +27,18 @@ view :: WorldState -> IO Picture
 view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll ws
 
 showAll :: WorldState -> Picture
-showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state allTextures, showGhost state] ++ (showMaze state allTextures)
+showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state allTextures, showGhost state] ++ showMaze state allTextures
 
 showPlayer :: GameState -> AllTextures -> Picture
 showPlayer gstate textures = case player gstate of
-  (PuckMan (x, y) _ _) -> translate x y $ playerTexture textures
+  (Player PuckMan (x, y) _ _) -> translate x y $ playerTexture textures
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of
-  (Blinky (x, y)) -> translate x y (color green (circle 16))
+  (Blinky (x, y) _) -> translate x y (color green (circle 5))
 
 showMaze :: GameState -> AllTextures -> [Picture]
-showMaze s@GameState {maze = m} textures = mapMaybe (\tile -> loadTile tile textures) m
+showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m
 
 loadTile :: Tile -> AllTextures -> Maybe Picture
 loadTile (Floor (x, y) (Just cType) _) textures = Just $ translate x y (f cType $ collectibleTextures textures)

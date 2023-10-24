@@ -2,6 +2,7 @@ module World where
 
 import Graphics.Gloss
 import Model
+import File 
 
 data WorldState = WorldState
   { gameState :: GameState,
@@ -45,12 +46,6 @@ data CollectibleTextures = CollectibleTextures
   { dot :: Texture,
     energizer :: Texture
   }
-
-loadLevel :: IO [String]
-loadLevel = do
-  level <- readFile "level/level.txt"
-
-  return $ lines level
 
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures
