@@ -15,7 +15,7 @@ main = do
   playIO
     (InWindow "Puck-Man" (calculateScreenSize state) (0, 0)) -- Or FullScreen
     black -- Background color
-    20 -- Frames per second
+    30 -- Frames per second
     state -- Initial state
     view
     input -- Event function
