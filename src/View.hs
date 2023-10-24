@@ -28,7 +28,18 @@ view :: WorldState -> IO Picture
 view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll ws
 
 showAll :: WorldState -> Picture
+<<<<<<< HEAD
 showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations} = Pictures $ [showPlayer state allAnimations, showGhost state] ++ (showMaze state allTextures)
+=======
+showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state allTextures, showGhost state, showScore ws state] ++ showMaze state allTextures
+
+showScore :: WorldState -> GameState -> Picture
+showScore ws state = translate y x (Color white $ Scale 0.2 0.2 $ Text (show $ snd $ score state))
+  where 
+    c = calculateScreenSize ws 
+    x = fromIntegral $ fst c + 20
+    y = fromIntegral $ snd c `div` 2 - 230
+>>>>>>> 02e3899 (score)
 
 showPlayer :: GameState -> AllAnimations -> Picture
 showPlayer gstate animations = case player gstate of
