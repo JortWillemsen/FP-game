@@ -2,11 +2,12 @@
 
 module Ai where
 
-import Data.Map (Map, fromList)
 import Data.List
+import Data.Map (Map, fromList)
 import Data.Maybe (fromMaybe, mapMaybe)
-import Maze (Maze, Tile (Floor, Wall), floors, getNeighbouringTiles, neighborsToList, pos)
+import Maze
 import Move (Position)
+import Debug.Trace (trace)
 
 data Distance = Distance Int | Infinite deriving (Show, Eq)
 
@@ -17,7 +18,7 @@ instance Ord Distance where
   Distance x <= Infinite = True
   Distance x <= Distance y = x <= y
 
-data Node = Node Position Distance
+data Node = Node Position Distance deriving (Show)
 
 instance Ord Node where
   (>) n1 n2 = Ai.pos n1 > Ai.pos n2
@@ -31,28 +32,34 @@ instance Eq Node where
 pos :: Node -> Position
 pos (Node p _) = p
 
-data Graph = Graph
-  { -- A list of nodes with it's neighbors
-    nodes :: [(Node, [Position])]
-  }
+posIn :: Position -> [Node] -> Bool
+posIn p nodes = foldr f False nodes where
+  f (Node p' _) r = p == p' || r
+
+data Graph = Graph [(Node, [Position])]
+
+instance Show Graph where
+  show (Graph xs) = "Graph: " ++ show xs
 
 data Dijkstra = State {unvisited :: [Node]}
 
 initialGraph :: Maze -> Graph
-initialGraph m = Graph {nodes = buildNodes m}
+initialGraph m = Graph $ buildNodes m
 
 buildNodes :: Maze -> [(Node, [Position])]
-buildNodes maze@(x : xs) =
-  let node = findNode x
-   in case node of
-        Nothing -> buildNodes xs
-        Just n -> (n, findConnections n) : buildNodes xs
+buildNodes maze =
+  buildNodes' maze maze 
   where
+    buildNodes' _ [] = []
+    buildNodes' maze current@(x:xs) = let node = findNode x
+        in case node of
+        Nothing -> buildNodes' maze xs
+        Just n -> (n, findConnections n) : buildNodes' maze xs
     findNode :: Tile -> Maybe Node
     findNode (Floor p _ _) = Just (Node p Infinite)
     findNode (Wall {}) = Nothing
     findConnections :: Node -> [Position]
-    findConnections n = map Maze.pos $ floors $ neighborsToList $ getNeighbouringTiles maze $ Ai.pos n
+    findConnections n = floors $ neighborsToList $ getNeighbouringTiles maze $ Ai.pos n
 
 addDistance :: Graph -> Position -> Position -> [Node]
 addDistance g s e =
@@ -60,11 +67,15 @@ addDistance g s e =
    in addDistance' g start e []
   where
     addDistance' :: Graph -> Node -> Position -> [Node] -> [Node]
-    addDistance' g c@(Node p d) e xs = 
-      let neighbors = lookup c (nodes g) in 
-        case neighbors of
-          Just ns -> map (\x -> visit x d) ns
-          otherwise -> [] 
-    visit :: Position -> Distance -> Node
-    visit p Infinite = (Node p Infinite)
-    visit p (Distance x) = (Node p (Distance (x + 1)))
+    addDistance' g@(Graph nodes) c@(Node p d) e xs =
+      let posses = lookup c nodes
+          neighbors = case posses of
+            Just nbs -> filter (\x -> not $ x `posIn` xs) nbs
+            otherwise -> []
+        in if Ai.pos c == e
+            then (c : xs)
+            else concatMap (\x -> addDistance' g x e (c : xs)) $ map (`visit` d) neighbors
+
+visit :: Position -> Distance -> Node
+visit p Infinite = (Node p Infinite)
+visit p (Distance x) = (Node p (Distance (x + 1)))

@@ -18,6 +18,40 @@ pos (Floor p _ _) = p
 
 type Maze = [Tile]
 
+-- XXXXX
+-- XOOOX
+-- XOXOX
+-- XOOOX
+-- XXXXX
+basicMaze :: Maze
+basicMaze =
+  [ Wall (0.0 * tileSize, 4.0 * tileSize) (Just (Corner Nw)),
+    Wall (1.0 * tileSize, 4.0 * tileSize) (Just (Pipe H)),
+    Wall (2.0 * tileSize, 4.0 * tileSize) (Just (Pipe H)),
+    Wall (3.0 * tileSize, 4.0 * tileSize) (Just (Pipe H)),
+    Wall (4.0 * tileSize, 4.0 * tileSize) (Just (Corner Ne)),
+    Wall (0.0 * tileSize, 3.0 * tileSize) (Just (Pipe V)),
+    Floor (1.0 * tileSize, 3.0 * tileSize) Nothing Nothing,
+    Floor (2.0 * tileSize, 3.0 * tileSize) Nothing Nothing,
+    Floor (3.0 * tileSize, 3.0 * tileSize) Nothing Nothing,
+    Wall (4.0 * tileSize, 3.0 * tileSize) (Just (Pipe V)),
+    Wall (0.0 * tileSize, 2.0 * tileSize) (Just (Pipe V)),
+    Floor (1.0 * tileSize, 2.0 * tileSize) Nothing Nothing,
+    Wall (2.0 * tileSize, 2.0 * tileSize) (Just Contained),
+    Floor (3.0 * tileSize, 2.0 * tileSize) Nothing Nothing,
+    Wall (4.0 * tileSize, 2.0 * tileSize) (Just (Pipe V)),
+    Wall (0.0 * tileSize, 1.0 * tileSize) (Just (Pipe V)),
+    Floor (1.0 * tileSize, 1.0 * tileSize) Nothing Nothing,
+    Floor (2.0 * tileSize, 1.0 * tileSize) Nothing Nothing,
+    Floor (3.0 * tileSize, 1.0 * tileSize) Nothing Nothing,
+    Wall (4.0 * tileSize, 1.0 * tileSize) (Just (Pipe V)),
+    Wall (0.0 * tileSize, 0.0 * tileSize) (Just (Corner Sw)),
+    Wall (1.0 * tileSize, 0.0 * tileSize) (Just (Pipe H)),
+    Wall (2.0 * tileSize, 0.0 * tileSize) (Just (Pipe H)),
+    Wall (3.0 * tileSize, 0.0 * tileSize) (Just (Pipe H)),
+    Wall (4.0 * tileSize, 0.0 * tileSize) (Just (Corner Se))
+  ]
+
 data SpawnPoint
   = FruitSpawn
   | PlayerSpawn
@@ -55,12 +89,12 @@ hasDot m p = case findTileInMaze m p of
 
 removeDot :: Maze -> Position -> Maze
 removeDot m p = case findTileInMaze m p of
-  (Floor p (Just a) s) -> removeDot' m p 
-  where 
-    removeDot' (t@(Floor pos (Just a) s):ts) p | p == pos = Floor pos Nothing s : ts
-                                               | otherwise = t : removeDot' ts p 
-    removeDot' (t:ts) p = t : removeDot' ts p 
-
+  (Floor p (Just a) s) -> removeDot' m p
+  where
+    removeDot' (t@(Floor pos (Just a) s) : ts) p
+      | p == pos = Floor pos Nothing s : ts
+      | otherwise = t : removeDot' ts p
+    removeDot' (t : ts) p = t : removeDot' ts p
 
 loadMaze :: [String] -> Maze
 loadMaze rs = addWallTypesToMaze $ loadMaze' (reverse rs) 0
@@ -112,18 +146,20 @@ getNeighbouringTiles m (x, y) =
     findTileInMaze m (x, y - tileSize)
   )
 
-
 -- ANDERS
 getNeighbouringFloorTiles :: Maze -> Position -> [Tile]
-getNeighbouringFloorTiles m (x, y) = getFloorTiles [findTileInMaze m (x, y + tileSize),
-                                                    findTileInMaze m (x - tileSize, y),
-                                                    findTileInMaze m (x + tileSize, y),
-                                                    findTileInMaze m (x, y - tileSize)]
-    where
-      getFloorTiles [] = []
-      getFloorTiles (t:ts) = case t of
-        (Floor {}) -> t : getFloorTiles ts
-        _ -> getFloorTiles ts
+getNeighbouringFloorTiles m (x, y) =
+  getFloorTiles
+    [ findTileInMaze m (x, y + tileSize),
+      findTileInMaze m (x - tileSize, y),
+      findTileInMaze m (x + tileSize, y),
+      findTileInMaze m (x, y - tileSize)
+    ]
+  where
+    getFloorTiles [] = []
+    getFloorTiles (t : ts) = case t of
+      (Floor {}) -> t : getFloorTiles ts
+      _ -> getFloorTiles ts
 
 findTileInMaze :: Maze -> Position -> Tile
 findTileInMaze [] p = Wall p Nothing
@@ -144,9 +180,5 @@ getSpawns point = filter (isSpawn point)
 neighborsToList :: (Tile, Tile, Tile, Tile) -> [Tile]
 neighborsToList (a, b, c, d) = [a, b, c, d]
 
-floors :: Maze -> Maze
-floors = filter isFloor
-
-isFloor :: Tile -> Bool
-isFloor (Floor {}) = True
-isFloor _ = False
+floors :: Maze -> [Position]
+floors xs = [ p | Floor p _ _ <- xs]
