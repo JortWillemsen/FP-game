@@ -3,7 +3,7 @@
 module View where
 
 import Data.Maybe (mapMaybe)
-import Ghost (Ghost (..))
+import Ghost (Ghost (..), GhostType (..))
 import Graphics.Gloss
 import Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
 import Model
@@ -28,18 +28,21 @@ view :: WorldState -> IO Picture
 view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll ws
 
 showAll :: WorldState -> Picture
-<<<<<<< HEAD
 showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations} = Pictures $ [showPlayer state allAnimations, showGhost state] ++ (showMaze state allTextures)
-=======
-showAll ws@WorldState {gameState = state, textures = allTextures} = Pictures $ [showPlayer state allTextures, showGhost state, showScore ws state] ++ showMaze state allTextures
+
+showLives :: WorldState -> GameState -> Picture 
+showLives ws state = translate y x (Color red $ Scale 0.2 0.2 $ Text (show $ lives state))
+  where 
+    c = calculateScreenSize ws 
+    x = fromIntegral $ fst c + 20
+    y = fromIntegral $ snd c `div` 2 
 
 showScore :: WorldState -> GameState -> Picture
-showScore ws state = translate y x (Color white $ Scale 0.2 0.2 $ Text (show $ snd $ score state))
+showScore ws state = translate y x (Color white $ Scale 0.2 0.2 $ Text (show $ score state))
   where 
     c = calculateScreenSize ws 
     x = fromIntegral $ fst c + 20
     y = fromIntegral $ snd c `div` 2 - 230
->>>>>>> 02e3899 (score)
 
 showPlayer :: GameState -> AllAnimations -> Picture
 showPlayer gstate animations = case player gstate of
@@ -53,7 +56,7 @@ showPlayer gstate animations = case player gstate of
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of
-  (Blinky (x, y) _) -> translate x y (color green (circle 5))
+  (Ghost Blinky (x, y) _) -> translate x y (color green (circle 5))
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m

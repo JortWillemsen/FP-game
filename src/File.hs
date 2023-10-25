@@ -1,6 +1,6 @@
 module File where
 
-import Score ( Score, updateHighScores )
+import Score ( Score, updateHighScores, HighScore )
 
 loadLevel :: IO [String] 
 loadLevel = do
@@ -20,12 +20,12 @@ saveHighScores score = do
         else writeFile "score/highscores.txt" (buildScoreString [score])
         
     where
-        buildScoreList :: [String] -> [Score]
+        buildScoreList :: [String] -> [HighScore]
         buildScoreList [] = []
         buildScoreList (x:xs) = (concat $ take 1 ws, read . concat $ drop 1 ws) : buildScoreList xs
             where
                 ws = words x
 
-        buildScoreString :: [Score] -> String
+        buildScoreString :: [HighScore] -> String
         buildScoreString [] = []
         buildScoreString ((n, s):xs) = n ++ " " ++ show s ++ "\n" ++ buildScoreString xs

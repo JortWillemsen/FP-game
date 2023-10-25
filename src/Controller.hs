@@ -1,18 +1,18 @@
 module Controller where
 
-import Ghost (Ghost (Blinky))
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Maze
 import Model
 import Move (Association (..), Move, Position, directionToMove, down, getMove, left, moveToDirection, right, up)
 import Player
-import Score (updateScore)
 import System.Random
 import World
+import Score (updateScore, updateHighScores)
+import Ghost (collidesWithPlayer)
 
 -- | Handle one iteration of the game
-step :: Float -> WorldState -> IO WorldState
+step :: Float -> WorldState -> IO WorldState -- gebruik maken van een do-block
 step interval ws@WorldState {gameState = state}
   | isPaused state == Pause =
       return $
@@ -23,6 +23,7 @@ step interval ws@WorldState {gameState = state}
                   time = time state + interval
                 }
           }
+  | gameOver state = initialWorldState -- temporary
   | otherwise =
       return $
         ws
@@ -31,12 +32,19 @@ step interval ws@WorldState {gameState = state}
                 { player = makePlayerMove (player state) (maze state),
                   score = fst updatedScore,
                   maze = snd updatedScore,
+                  cooldown = if changeLives /= lives state then 30 else setCoolDown (cooldown state),
+                  lives = changeLives,
                   -- blinky = moveAlgorithm (blinky state) (player state) (maze state),
                   ticks = ticks state + 1,
                   time = time state + interval
                 }
           }
   where
+    setCoolDown n | n /= 0 = n - 1
+                  | otherwise = n
+    changeLives = if collidesWithPlayer (player state) (blinky state) && cooldown state == 0
+                    then lives state - 1
+                    else lives state
     updatedScore = updateScore (position (player state)) (maze state) (score state)
     inputBuffer (Player _ _ ib _) = [y | (_, y, _) <- ib]
 
@@ -44,12 +52,16 @@ step interval ws@WorldState {gameState = state}
 input :: Event -> WorldState -> IO WorldState
 input e ws@WorldState {gameState = state} = return ws {gameState = inputKey e state}
 
+gameOver :: GameState -> Bool
+gameOver state = lives state == 0 
+
 -- check if a key is pressed down change state, otherwise leave state as it was
 inputKey :: Event -> GameState -> GameState
-inputKey (EventKey (Char c) t _ _) state
-  | c == 'p' && t == Down = state {isPaused = pauseGame (isPaused state)}
-  | c == 'p' && t == Up = state
-  | otherwise = state {player = updateInputBuffer c (player state)}
+inputKey (EventKey (Char c) t _ _) state 
+  = case c of 
+    'p' | t == Down -> state {isPaused = pauseGame (isPaused state)}
+        | t == Up -> state
+    _ -> state {player = updateInputBuffer c (player state)}
 inputKey _ state = state
 
 makeMove :: Move -> Maze -> Position
