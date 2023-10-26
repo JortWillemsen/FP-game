@@ -28,7 +28,7 @@ step interval ws@WorldState {gameState = state}
         ws
           { gameState =
               state
-                { player = makePlayerMove (player state) (maze state),
+                { player = player state,
                   score = fst updatedScore,
                   maze = snd updatedScore,
                   -- blinky = moveAlgorithm (blinky state) (player state) (maze state),
@@ -51,42 +51,6 @@ inputKey (EventKey (Char c) t _ _) state
   | c == 'p' && t == Up = state
   | otherwise = state {player = updateInputBuffer c (player state)}
 inputKey _ state = state
-
-makeMove :: Move -> Maze -> Position
-makeMove (pos, potentialPos) m
-  | moveAllowed potentialPos m = potentialPos -- if move allowed, make move
-  | otherwise = pos -- if move not allowed, stay where you are
-  where
-    moveAllowed :: Position -> Maze -> Bool -- check if move is allowed
-    moveAllowed _ [] = True
-    moveAllowed pos' (t : ts) = case t of
-      (Wall wPos _)
-        | hitbox pos' `intersect` hitbox wPos -> False -- if moveable object intersects with a wall, move not allowed
-        | otherwise -> moveAllowed pos' ts
-      _ -> moveAllowed pos' ts
-      where
-        hitbox :: Position -> [Position] -- TODO zou dit nog anders kunnen?
-        hitbox p@(x, y) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
-
-        intersect :: [Position] -> [Position] -> Bool
-        intersect hitbox s = any (`inSquare` s) hitbox
-          where
-            inSquare :: Position -> [Position] -> Bool
-            inSquare (x, y) [(bLX, bLY), _, (tRX, tRY), _] = x > bLX && y > bLY && x <= tRX && y <= tRY
-
--- when a key is pressed, move player based on which key is pressed
-makePlayerMove :: Player -> Maze -> Player
-makePlayerMove (Player s pos ibs d) m = move ibs pos
-  where
-    -- applies a move to a position
-    move :: [InputBuffer] -> Position -> Player
-    move ((_, t, a) : ibs') pos'
-      | t == Depressed =
-          if makeMove (pos', getMove a pos') m /= getMove a pos' -- TODO ANDERS
-            then Player s (makeMove (pos', getMove (directionToMove d) pos') m) ibs d
-            else Player s (getMove a pos') ibs (moveToDirection a)
-      | otherwise = move ibs' pos'
-    move [] pos' = Player PuckMan (makeMove (pos', getMove (directionToMove d) pos') m) ibs d
 
 -- updates the input buffer of a player when a key is pressed
 updateInputBuffer :: Char -> Player -> Player

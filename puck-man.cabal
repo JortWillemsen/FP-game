@@ -18,11 +18,13 @@ executable puck-man
                      , Model
                      , View
                      , Ai
+                     , Collidable
                      , Maze
                      , Player
                      , Move
                      , Ghost
                      , Score
+                     , Constants
                      , File
                      , World
                      , Animation

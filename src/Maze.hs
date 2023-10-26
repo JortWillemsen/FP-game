@@ -1,15 +1,14 @@
 module Maze where
 
 import Data.Maybe (fromMaybe, mapMaybe)
-import Move
+import Constants
+
+type Position = (Float, Float)
 
 data Tile
   = Floor Position (Maybe Collectable) (Maybe SpawnPoint)
   | Wall Position (Maybe WallType)
   deriving (Show, Ord, Eq)
-
-tileSize :: Float
-tileSize = 16.0
 
 -- Allows for easy access
 pos :: Tile -> Position
@@ -177,8 +176,8 @@ isSpawn _ _ = False
 getSpawns :: SpawnPoint -> Maze -> [Tile]
 getSpawns point = filter (isSpawn point)
 
-neighborsToList :: (Tile, Tile, Tile, Tile) -> [Tile]
-neighborsToList (a, b, c, d) = [a, b, c, d]
+neighborsList :: (Tile, Tile, Tile, Tile) -> [Tile]
+neighborsList (a, b, c, d) = [a, b, c, d]
 
-floors :: Maze -> [Position]
-floors xs = [ p | Floor p _ _ <- xs]
+floors :: Maze -> Maze
+floors xs = [ x | x@(Floor {}) <- xs]
