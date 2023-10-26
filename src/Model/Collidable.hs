@@ -1,5 +1,5 @@
-module Collidable where
-import Maze
+module Model.Collidable where
+import Model.Maze
 
 type HitBox = [Position]
 

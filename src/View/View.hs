@@ -1,16 +1,16 @@
 -- | This module defines how to turn
 --   the game state into a picture
-module View where
+module View.View where
 
 import Data.Maybe (mapMaybe)
-import Ghost (Ghost (..))
+import Model.Ghost (Ghost (..))
 import Graphics.Gloss
-import Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
-import Model
-import Move
-import Player
-import World
-import Animation
+import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
+import Model.Model
+import Model.Move
+import Model.Player
+import View.World
+import View.Animation
 
 textureSize :: Float
 textureSize = 16.0

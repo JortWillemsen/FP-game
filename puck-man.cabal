@@ -14,18 +14,18 @@ executable puck-man
                        containers,
                        random
   hs-source-dirs:      src
-  other-modules:       Controller
-                     , Model
-                     , View
-                     , Ai
-                     , Collidable
-                     , Maze
-                     , Player
-                     , Move
-                     , Ghost
-                     , Score
-                     , Constants
-                     , File
-                     , World
-                     , Animation
+  other-modules:       Controller.Controller
+                     , Model.Model
+                     , View.View
+                     , Model.Ai
+                     , Model.Collidable
+                     , Model.Maze
+                     , Model.Player
+                     , Model.Move
+                     , Model.Ghost
+                     , Model.Score
+                     , Model.Constants
+                     , View.File
+                     , View.World
+                     , View.Animation
   default-language:    Haskell2010

@@ -1,4 +1,4 @@
-module Constants where
+module Model.Constants where
 
 speed :: Float
 speed = 2

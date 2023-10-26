@@ -1,9 +1,9 @@
-module World where
+module View.World where
 
 import Graphics.Gloss
-import Model
-import Animation
-import File 
+import Model.Model
+import View.Animation
+import View.File 
 
 data WorldState = WorldState
   { gameState :: GameState,

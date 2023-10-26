@@ -1,7 +1,7 @@
-module Maze where
+module Model.Maze where
 
 import Data.Maybe (fromMaybe, mapMaybe)
-import Constants
+import Model.Constants
 
 type Position = (Float, Float)
 

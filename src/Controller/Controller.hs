@@ -1,15 +1,14 @@
-module Controller where
+module Controller.Controller where
 
-import Ghost (Ghost (Blinky))
+import Model.Ghost (Ghost (Blinky))
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
-import Maze
-import Model
-import Move (Association (..), Move, Position, directionToMove, down, getMove, left, moveToDirection, right, up)
-import Player
-import Score (updateScore)
-import System.Random
-import World
+import Model.Maze
+import Model.Model
+import Model.Move (Move, Position, down, left, right, up)
+import Model.Player
+import Model.Score (updateScore)
+import View.World
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState

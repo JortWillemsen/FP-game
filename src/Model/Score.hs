@@ -1,6 +1,5 @@
-module Score where 
-import Move
-import Maze
+module Model.Score where 
+import Model.Maze
 
 type Score = (String, Int)
 

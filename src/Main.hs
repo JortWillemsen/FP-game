@@ -1,13 +1,13 @@
 module Main where
 
-import Controller
+import Controller.Controller
 import Graphics.Gloss (loadBMP)
 import Graphics.Gloss.Interface.Environment (getScreenSize)
 import Graphics.Gloss.Interface.IO.Game
-import Maze (getMazeSize)
-import Model
-import View
-import World
+import Model.Maze (getMazeSize)
+import Model.Model
+import View.View
+import View.World
 
 main :: IO ()
 main = do

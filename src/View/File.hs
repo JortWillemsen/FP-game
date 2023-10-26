@@ -1,6 +1,6 @@
-module File where
+module View.File where
 
-import Score ( Score, updateHighScores )
+import Model.Score ( Score, updateHighScores )
 
 loadLevel :: IO [String] 
 loadLevel = do

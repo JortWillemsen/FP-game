@@ -1,11 +1,11 @@
-module Model where
+module Model.Model where
   
 
-import Move
-import Ghost (Ghost (Blinky))
-import Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
-import Player
-import Score
+import Model.Ghost (Ghost (Blinky))
+import Model.Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
+import Model.Player
+import Model.Score
+import Model.Move (Direction(L))
 
 type Time = Float
 
