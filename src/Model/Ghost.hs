@@ -12,11 +12,12 @@ data Ghost
   | Clyde Position Direction
 
 instance Moveable Ghost where
-  move (Blinky (x, y) d) L = Blinky (x - speed, y) L
-  move (Blinky (x, y) d) R = Blinky (x + speed, y) R
-  move (Blinky (x, y) d) U = Blinky (x, y + speed) U
-  move (Blinky (x, y) d) D = Blinky (x, y - speed) D
   pos (Blinky p _) = p
+  move (Blinky (x, y) d)
+    | d == U = Blinky (x - speed, y) d
+    | d == D = Blinky (x + speed, y) d
+    | d == L = Blinky (x, y - speed) d
+    | d == R = Blinky (x, y + speed) d
 
 instance Collidable Ghost where
   hitBox (Blinky p@(x, y) _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]

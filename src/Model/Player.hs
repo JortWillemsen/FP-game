@@ -1,29 +1,33 @@
 module Model.Player where
 
+import Model.Collidable
+import Model.Constants
 import Model.Maze (Maze)
 import Model.Move
-import Model.Constants
-import Model.Collidable
 
-data Toggled = Depressed | Released deriving Eq
+data Toggled = Depressed | Released deriving (Eq)
+
 type InputBuffer = (Char, Toggled, Direction)
 
-data Player = Player { playerType :: PlayerType
-                     , position :: Position
-                     , inputBuffer :: [InputBuffer]
-                     , direction :: Direction
-                     }
+data Player = Player
+  { playerType :: PlayerType,
+    position :: Position,
+    inputBuffer :: [InputBuffer],
+    direction :: Direction
+  }
 
-data PlayerType = PuckMan 
-                | MsPuckMan 
-                | JrPuckMan 
-                | BabyPuckMan  
+data PlayerType
+  = PuckMan
+  | MsPuckMan
+  | JrPuckMan
+  | BabyPuckMan
 
 instance Moveable Player where
-  move (Player t (x, y) i d) L = Player t (x - speed, y) i L
-  move (Player t (x, y) i d) R = Player t (x + speed, y) i R
-  move (Player t (x, y) i d) U = Player t (x, y + speed) i U
-  move (Player t (x, y) i d) D = Player t (x, y - speed) i D
+  move p@(Player t (x, y) i d)
+    | d == U = Player t (up p) i d
+    | d == D = Player t (down p) i d
+    | d == L = Player t (left p) i d
+    | d == R = Player t (right p) i d
   pos (Player _ p _ _) = p
 
 instance Collidable Player where
@@ -33,7 +37,9 @@ resetInputBuffer :: Player -> Player
 resetInputBuffer (Player _ pos ibs L) = Player PuckMan pos inputBufferWASD L
 
 inputBufferWASD :: [InputBuffer]
-inputBufferWASD = [('w', Released, U), 
-                   ('a', Released, L), 
-                   ('s', Released, D), 
-                   ('d', Released, R)]
+inputBufferWASD =
+  [ ('w', Released, U),
+    ('a', Released, L),
+    ('s', Released, D),
+    ('d', Released, R)
+  ]

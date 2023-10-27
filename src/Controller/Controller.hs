@@ -5,7 +5,7 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Model.Maze
 import Model.Model
-import Model.Move (Move, Position, down, left, right, up)
+import Model.Move (Move, Position, down, left, right, up, Moveable (move))
 import Model.Player
 import Model.Score (updateScore)
 import View.World
@@ -13,21 +13,13 @@ import View.World
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
-  | isPaused state == Pause =
-      return $
-        ws
-          { gameState =
-              state
-                { ticks = ticks state + 1,
-                  time = time state + interval
-                }
-          }
+  | isPaused state == Pause = return ws
   | otherwise =
       return $
         ws
           { gameState =
               state
-                { player = player state,
+                { player = move $ player state,
                   score = fst updatedScore,
                   maze = snd updatedScore,
                   -- blinky = moveAlgorithm (blinky state) (player state) (maze state),
@@ -37,4 +29,3 @@ step interval ws@WorldState {gameState = state}
           }
   where
     updatedScore = updateScore (position (player state)) (maze state) (score state)
-    inputBuffer (Player _ _ ib _) = [y | (_, y, _) <- ib]
