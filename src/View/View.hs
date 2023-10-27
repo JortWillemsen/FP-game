@@ -42,7 +42,7 @@ showPlayer gstate animations = case player gstate of
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of
-  (Ghost _ (x, y) _) -> translate x y (color green (circle 5))
+  (Ghost _ (x, y) _ _) -> translate x y (color green (circle 5))
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m
