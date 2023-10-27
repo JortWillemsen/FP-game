@@ -6,8 +6,9 @@ import Graphics.Gloss.Interface.Environment (getScreenSize)
 import Graphics.Gloss.Interface.IO.Game
 import Model.Maze (getMazeSize)
 import Model.Model
-import View.View
+import View.View ( calculateScreenSize, view )
 import View.World
+import View.Input
 
 main :: IO ()
 main = do

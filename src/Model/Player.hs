@@ -5,6 +5,9 @@ import Model.Move
 import Model.Constants
 import Model.Collidable
 
+data Toggled = Depressed | Released deriving Eq
+type InputBuffer = (Char, Toggled, Direction)
+
 data Player = Player { playerType :: PlayerType
                      , position :: Position
                      , inputBuffer :: [InputBuffer]
@@ -15,11 +18,6 @@ data PlayerType = PuckMan
                 | MsPuckMan 
                 | JrPuckMan 
                 | BabyPuckMan  
-
-data Toggled = Depressed | Released 
-               deriving Eq
-
-type InputBuffer = (Char, Toggled, Direction)
 
 instance Moveable Player where
   move (Player t (x, y) i d) L = Player t (x - speed, y) i L
@@ -39,5 +37,3 @@ inputBufferWASD = [('w', Released, U),
                    ('a', Released, L), 
                    ('s', Released, D), 
                    ('d', Released, R)]
-
-

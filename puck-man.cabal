@@ -28,4 +28,6 @@ executable puck-man
                      , View.File
                      , View.World
                      , View.Animation
+                     , View.Input
+                     , View.Random
   default-language:    Haskell2010
