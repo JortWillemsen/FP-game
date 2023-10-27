@@ -1,11 +1,11 @@
 module Controller.Controller where
 
-import Model.Ghost (Ghost (Blinky))
+import Model.Ghost (Ghost)
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Model.Maze
 import Model.Model
-import Model.Move (Move, Position, down, left, right, up, Moveable (move))
+import Model.Move (Move, Position, down, left, right, up, Moveable (move), translateMovable)
 import Model.Player
 import Model.Score (updateScore)
 import View.World
@@ -19,7 +19,7 @@ step interval ws@WorldState {gameState = state}
         ws
           { gameState =
               state
-                { player = move $ player state,
+                { player = translateMovable (player state) (maze state),
                   score = fst updatedScore,
                   maze = snd updatedScore,
                   -- blinky = moveAlgorithm (blinky state) (player state) (maze state),

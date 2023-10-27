@@ -3,7 +3,7 @@
 module View.View where
 
 import Data.Maybe (mapMaybe)
-import Model.Ghost (Ghost (..))
+import Model.Ghost (Ghost (Ghost))
 import Graphics.Gloss
 import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
 import Model.Model
@@ -42,7 +42,7 @@ showPlayer gstate animations = case player gstate of
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of
-  (Blinky (x, y) _) -> translate x y (color green (circle 5))
+  (Ghost _ (x, y) _) -> translate x y (color green (circle 5))
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m

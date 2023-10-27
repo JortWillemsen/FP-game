@@ -1,5 +1,6 @@
 module Model.Score where 
 import Model.Maze
+import Model.Move (Position)
 
 type Score = (String, Int)
 

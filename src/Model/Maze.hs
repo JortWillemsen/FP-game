@@ -2,13 +2,17 @@ module Model.Maze where
 
 import Data.Maybe (fromMaybe, mapMaybe)
 import Model.Constants
-
-type Position = (Float, Float)
+import Model.Move (Position)
+import Model.Collidable (Collidable (hitBox))
 
 data Tile
   = Floor Position (Maybe Collectable) (Maybe SpawnPoint)
   | Wall Position (Maybe WallType)
   deriving (Show, Ord, Eq)
+
+instance Collidable Tile where
+  hitBox (Wall p@(x, y) _ ) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
+  hitBox (Floor {}) = []
 
 -- Allows for easy access
 pos :: Tile -> Position
