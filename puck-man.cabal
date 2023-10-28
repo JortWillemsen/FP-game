@@ -17,7 +17,6 @@ executable puck-man
   other-modules:       Controller.Controller
                      , Model.Model
                      , View.View
-                     , Model.Ai
                      , Model.Collidable
                      , Model.Maze
                      , Model.Player

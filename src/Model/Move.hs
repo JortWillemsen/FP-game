@@ -56,8 +56,7 @@ translateGhost g p cs = fst $ head sortedMoves where
     D -> [tryMove g L cs, tryMove g D cs, tryMove g R cs]
 
 manhattan :: Position -> Position -> Float
-manhattan (x, y) (x', y') = trace (show calc) calc where
-  calc = (abs (x - x')) + (abs (y - y'))
+manhattan (x, y) (x', y') = abs (x - x') + abs (y - y')
 
 -- Takes a movable with a direction and a list of all possible collisions to check if the move is valid
 tryMove :: (Moveable a, Collidable a, Collidable b) => a -> Direction -> [b] -> Maybe a

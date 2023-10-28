@@ -7,9 +7,6 @@ type HitBox = [Position]
 class Collidable a where
   hitBox :: a -> HitBox
 
--- hitBox :: Postition -> HitBox
--- hitBox p@(x, y) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
-
 collides :: (Collidable a, Collidable b) => a -> b -> Bool
 collides x y = hitBox x `intersects` hitBox y
 

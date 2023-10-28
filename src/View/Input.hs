@@ -4,7 +4,6 @@ import Graphics.Gloss.Interface.IO.Game (Event (EventKey), Key (Char), KeyState 
 import Model.Model
 import View.World
 import Model.Player (Player(Player))
-import Debug.Trace (trace)
 import Model.Move
 
 input :: Event -> WorldState -> IO WorldState
@@ -20,7 +19,7 @@ handleKey _ state = state
 
 -- updates the input buffer of a player when a key is pressed
 updateInputForPlayer :: Char -> Player -> Player
-updateInputForPlayer c (Player s pos ibs d) = trace (show c) $ Player s pos (updateInputBuffer c ibs) d
+updateInputForPlayer c (Player s pos ibs d) = Player s pos (updateInputBuffer c ibs) d
   where
     -- updates the input buffer list of a player, making sure one key is depressed at a time
     updateInputBuffer :: Char -> [InputBuffer] -> [InputBuffer]
