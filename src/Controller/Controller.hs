@@ -14,6 +14,8 @@ import View.World
 step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
   | isPaused state == Pause = return ws
+  | gameOver state = createWorldState 1 -- temporary
+  | nextLevel (maze state) = createWorldState (level state + 1)
   | otherwise =
       return $
         ws
@@ -29,3 +31,10 @@ step interval ws@WorldState {gameState = state}
           }
   where
     updatedScore = updateScore (position (player state)) (maze state) (score state)
+
+
+gameOver :: GameState -> Bool
+gameOver state = lives state == 0 
+
+nextLevel :: Maze -> Bool 
+nextLevel m = all (== Nothing) [getCollectible m p | (Floor p _ _) <- m]

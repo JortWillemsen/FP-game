@@ -28,7 +28,32 @@ view :: WorldState -> IO Picture
 view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll ws
 
 showAll :: WorldState -> Picture
-showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations} = Pictures $ [showPlayer state allAnimations, showGhost state] ++ (showMaze state allTextures)
+showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
+  | toggled $ menuState state = translate 0 0 (color green (circle 5)) 
+  | isPaused state == Pause = Pictures $ [showPlayer state allAnimations,
+                                  showGhost state, showLives ws state,
+                                  showScore ws state] ++ showMaze state allTextures ++ [showPause ws allTextures]
+
+  | otherwise = Pictures $ [showPlayer state allAnimations,
+                                  showGhost state, showLives ws state,
+                                  showScore ws state] ++ showMaze state allTextures
+
+showLives :: WorldState -> GameState -> Picture
+showLives ws state = translate y x (Color red $ Scale 0.2 0.2 $ Text (show $ lives state))
+  where
+    c = calculateScreenSize ws
+    x = fromIntegral $ fst c + 20
+    y = fromIntegral $ snd c `div` 2
+
+showPause :: WorldState -> AllTextures -> Picture
+showPause ws text = translate 225 225 (paused $ textTextures text)
+
+showScore :: WorldState -> GameState -> Picture
+showScore ws state = translate y x (Color white $ Scale 0.2 0.2 $ Text (show $ score state))
+  where
+    c = calculateScreenSize ws
+    x = fromIntegral $ fst c + 20
+    y = fromIntegral $ snd c `div` 2 - 230
 
 showPlayer :: GameState -> AllAnimations -> Picture
 showPlayer gstate animations = case player gstate of

@@ -81,23 +81,20 @@ data Collectable
   | Fruit
   deriving (Show, Eq, Ord)
 
-hasDot :: Maze -> Position -> Bool
-hasDot m p = case findTileInMaze m p of
-  (Floor _ Nothing _) -> False
-  (Floor _ (Just a) _) -> isDot a
-  _ -> False
-  where
-    isDot Dot = True
-    isDot _ = False
+getCollectible :: Maze -> Position -> Maybe Collectable
+getCollectible m p = case findTileInMaze m p of
+  (Floor _ c _) -> c
+  _ -> Nothing
 
-removeDot :: Maze -> Position -> Maze
-removeDot m p = case findTileInMaze m p of
-  (Floor p (Just a) s) -> removeDot' m p
-  where
-    removeDot' (t@(Floor pos (Just a) s) : ts) p
+removeCollectible :: Maze -> Position -> Maze
+removeCollectible m p = case findTileInMaze m p of
+  (Floor p (Just a) s) -> removeCollectible' m p 
+  where 
+    removeCollectible' (t@(Floor pos (Just a) s):ts) p  
       | p == pos = Floor pos Nothing s : ts
-      | otherwise = t : removeDot' ts p
-    removeDot' (t : ts) p = t : removeDot' ts p
+      | otherwise = t : removeCollectible' ts p 
+    removeCollectible' (t:ts) p = t : removeCollectible' ts p 
+
 
 loadMaze :: [String] -> Maze
 loadMaze rs = addWallTypesToMaze $ loadMaze' (reverse rs) 0

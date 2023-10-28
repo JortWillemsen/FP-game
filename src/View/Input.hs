@@ -4,7 +4,8 @@ import Graphics.Gloss.Interface.IO.Game (Event (EventKey), Key (Char), KeyState 
 import Model.Model
 import View.World
 import Model.Player (Player(Player))
-import Model.Move
+import Model.Move ( InputBuffer, Toggled(Released, Depressed) )
+import View.Menu
 
 input :: Event -> WorldState -> IO WorldState
 input e ws@WorldState {gameState = state} = return ws {gameState = handleKey e state}
@@ -14,6 +15,8 @@ handleKey :: Event -> GameState -> GameState
 handleKey (EventKey (Char c) t _ _) state
   | c == 'p' && t == Down = state {isPaused = pauseGame (isPaused state)}
   | c == 'p' && t == Up = state
+  | c == 'm' && t == Down = state {isPaused = Pause, menuState = MenuState { toggled = toggleMenu (toggled $ menuState state), levels = []} }
+  | c == 'm' && t == Up = state 
   | otherwise = state {player = updateInputForPlayer c (player state)}
 handleKey _ state = state
 
