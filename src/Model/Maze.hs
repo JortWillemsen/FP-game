@@ -1,15 +1,18 @@
-module Maze where
+module Model.Maze where
 
 import Data.Maybe (fromMaybe, mapMaybe)
-import Move
+import Model.Constants
+import Model.Move (Position)
+import Model.Collidable (Collidable (hitBox))
 
 data Tile
   = Floor Position (Maybe Collectable) (Maybe SpawnPoint)
   | Wall Position (Maybe WallType)
   deriving (Show, Ord, Eq)
 
-tileSize :: Float
-tileSize = 16.0
+instance Collidable Tile where
+  hitBox (Wall p@(x, y) _ ) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
+  hitBox (Floor {}) = []
 
 -- Allows for easy access
 pos :: Tile -> Position
@@ -17,6 +20,40 @@ pos (Wall p _) = p
 pos (Floor p _ _) = p
 
 type Maze = [Tile]
+
+-- XXXXX
+-- XOOOX
+-- XOXOX
+-- XOOOX
+-- XXXXX
+basicMaze :: Maze
+basicMaze =
+  [ Wall (0.0 * tileSize, 4.0 * tileSize) (Just (Corner Nw)),
+    Wall (1.0 * tileSize, 4.0 * tileSize) (Just (Pipe H)),
+    Wall (2.0 * tileSize, 4.0 * tileSize) (Just (Pipe H)),
+    Wall (3.0 * tileSize, 4.0 * tileSize) (Just (Pipe H)),
+    Wall (4.0 * tileSize, 4.0 * tileSize) (Just (Corner Ne)),
+    Wall (0.0 * tileSize, 3.0 * tileSize) (Just (Pipe V)),
+    Floor (1.0 * tileSize, 3.0 * tileSize) Nothing Nothing,
+    Floor (2.0 * tileSize, 3.0 * tileSize) Nothing Nothing,
+    Floor (3.0 * tileSize, 3.0 * tileSize) Nothing Nothing,
+    Wall (4.0 * tileSize, 3.0 * tileSize) (Just (Pipe V)),
+    Wall (0.0 * tileSize, 2.0 * tileSize) (Just (Pipe V)),
+    Floor (1.0 * tileSize, 2.0 * tileSize) Nothing Nothing,
+    Wall (2.0 * tileSize, 2.0 * tileSize) (Just Contained),
+    Floor (3.0 * tileSize, 2.0 * tileSize) Nothing Nothing,
+    Wall (4.0 * tileSize, 2.0 * tileSize) (Just (Pipe V)),
+    Wall (0.0 * tileSize, 1.0 * tileSize) (Just (Pipe V)),
+    Floor (1.0 * tileSize, 1.0 * tileSize) Nothing Nothing,
+    Floor (2.0 * tileSize, 1.0 * tileSize) Nothing Nothing,
+    Floor (3.0 * tileSize, 1.0 * tileSize) Nothing Nothing,
+    Wall (4.0 * tileSize, 1.0 * tileSize) (Just (Pipe V)),
+    Wall (0.0 * tileSize, 0.0 * tileSize) (Just (Corner Sw)),
+    Wall (1.0 * tileSize, 0.0 * tileSize) (Just (Pipe H)),
+    Wall (2.0 * tileSize, 0.0 * tileSize) (Just (Pipe H)),
+    Wall (3.0 * tileSize, 0.0 * tileSize) (Just (Pipe H)),
+    Wall (4.0 * tileSize, 0.0 * tileSize) (Just (Corner Se))
+  ]
 
 data SpawnPoint
   = FruitSpawn
@@ -53,8 +90,9 @@ removeCollectible :: Maze -> Position -> Maze
 removeCollectible m p = case findTileInMaze m p of
   (Floor p (Just a) s) -> removeCollectible' m p 
   where 
-    removeCollectible' (t@(Floor pos (Just a) s):ts) p | p == pos = Floor pos Nothing s : ts
-                                               | otherwise = t : removeCollectible' ts p 
+    removeCollectible' (t@(Floor pos (Just a) s):ts) p  
+      | p == pos = Floor pos Nothing s : ts
+      | otherwise = t : removeCollectible' ts p 
     removeCollectible' (t:ts) p = t : removeCollectible' ts p 
 
 
@@ -108,18 +146,20 @@ getNeighbouringTiles m (x, y) =
     findTileInMaze m (x, y - tileSize)
   )
 
-
 -- ANDERS
 getNeighbouringFloorTiles :: Maze -> Position -> [Tile]
-getNeighbouringFloorTiles m (x, y) = getFloorTiles [findTileInMaze m (x, y + tileSize),
-                                                    findTileInMaze m (x - tileSize, y),
-                                                    findTileInMaze m (x + tileSize, y),
-                                                    findTileInMaze m (x, y - tileSize)]
-    where
-      getFloorTiles [] = []
-      getFloorTiles (t:ts) = case t of
-        (Floor {}) -> t : getFloorTiles ts
-        _ -> getFloorTiles ts
+getNeighbouringFloorTiles m (x, y) =
+  getFloorTiles
+    [ findTileInMaze m (x, y + tileSize),
+      findTileInMaze m (x - tileSize, y),
+      findTileInMaze m (x + tileSize, y),
+      findTileInMaze m (x, y - tileSize)
+    ]
+  where
+    getFloorTiles [] = []
+    getFloorTiles (t : ts) = case t of
+      (Floor {}) -> t : getFloorTiles ts
+      _ -> getFloorTiles ts
 
 findTileInMaze :: Maze -> Position -> Tile
 findTileInMaze [] p = Wall p Nothing
@@ -136,3 +176,9 @@ isSpawn _ _ = False
 
 getSpawns :: SpawnPoint -> Maze -> [Tile]
 getSpawns point = filter (isSpawn point)
+
+neighborsList :: (Tile, Tile, Tile, Tile) -> [Tile]
+neighborsList (a, b, c, d) = [a, b, c, d]
+
+floors :: Maze -> Maze
+floors xs = [ x | x@(Floor {}) <- xs]

@@ -1,11 +1,11 @@
-module Model where
+module Model.Model where
+  
 
-
-import Move
-import Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
-import Player
-import Score
-import Ghost
+import Model.Ghost
+import Model.Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
+import Model.Player
+import Model.Score
+import Model.Move (Direction(L))
 
 type Time = Float
 
@@ -42,13 +42,8 @@ data GameState = GameState {
 data MenuState = MenuState { levels :: [Int], toggled :: Bool } -- maybe Toggled type 
 
 -- Takes level for first time maze generation.
--- initialState :: [String] -> GameState
--- initialState level = GameState maze Play initiateLives 0 0 0 (Player PuckMan playerSpawn inputBufferWASD L) (Ghost Blinky ghostSpawn L) 1 (MenuState [1] True) where
---   maze = loadMaze level
---   playerSpawn = Maze.pos $ head $ getSpawns PlayerSpawn maze
---   ghostSpawn = Maze.pos $ head $ getSpawns GhostSpawn maze
 nextState :: [String] -> Level -> GameState
-nextState level l = GameState maze Play initiateLives 0 0 0 (Player PuckMan playerSpawn inputBufferWASD L) (Ghost Blinky ghostSpawn L) l (MenuState [1] False) where
+nextState level l = GameState maze Play initiateLives 0 0 0 (Player PuckMan playerSpawn inputBufferWASD L) (Ghost Blinky ghostSpawn L inputBufferWASD) l (MenuState [1] False) where
   maze = loadMaze level
-  playerSpawn = Maze.pos $ head $ getSpawns PlayerSpawn maze
-  ghostSpawn = Maze.pos $ head $ getSpawns GhostSpawn maze
+  playerSpawn = pos $ head $ getSpawns PlayerSpawn maze
+  ghostSpawn = pos $ head $ getSpawns GhostSpawn maze

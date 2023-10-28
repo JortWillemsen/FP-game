@@ -1,16 +1,16 @@
 -- | This module defines how to turn
 --   the game state into a picture
-module View where
+module View.View where
 
 import Data.Maybe (mapMaybe)
-import Ghost (Ghost (..), GhostType (..))
+import Model.Ghost (Ghost (Ghost))
 import Graphics.Gloss
-import Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
-import Model
-import Move
-import Player
-import World
-import Animation
+import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
+import Model.Model
+import Model.Move
+import Model.Player
+import View.World
+import View.Animation
 
 textureSize :: Float
 textureSize = 16.0
@@ -67,7 +67,7 @@ showPlayer gstate animations = case player gstate of
 
 showGhost :: GameState -> Picture
 showGhost gstate = case blinky gstate of
-  (Ghost Blinky (x, y) _) -> translate x y (color green (circle 5))
+  (Ghost _ (x, y) _ _) -> translate x y (color green (circle 5))
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m
