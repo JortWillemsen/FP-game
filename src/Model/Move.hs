@@ -16,6 +16,12 @@ type Move = (Position, Position)
 
 data Direction = L | R | U | D deriving (Eq, Show)
 
+inverse :: Direction -> Direction
+inverse L = R
+inverse R = L
+inverse U = D
+inverse D = U
+
 class Moveable a where
   move :: a -> Direction -> a
   pos :: a -> Position
@@ -44,16 +50,19 @@ translatePlayer m cs =
       Just p -> p
 
 translateGhost :: (Moveable a, Collidable a, Collidable c) => a -> Position -> [c] -> a
-translateGhost g p cs = fst $ head sortedMoves where
-  sortedMoves = sortBy (compare `on` snd) possibleMoves
-  possibleMoves = foldr f [] movesPerDir
-  f (Just x) r = (x, manhattan (pos x) p) : r
-  f Nothing r = r
-  movesPerDir = case dir g of
-    L -> [tryMove g D cs, tryMove g L cs, tryMove g U cs]
-    R -> [tryMove g D cs, tryMove g R cs, tryMove g U cs]
-    U -> [tryMove g L cs, tryMove g U cs, tryMove g R cs]
-    D -> [tryMove g L cs, tryMove g D cs, tryMove g R cs]
+translateGhost g p cs = if length sortedMoves < 1
+  then move g (inverse $ dir g)
+  else fst $ head sortedMoves 
+    where
+      sortedMoves = sortBy (compare `on` snd) possibleMoves
+      possibleMoves = foldr f [] movesPerDir
+      f (Just x) r = (x, manhattan (pos x) p) : r
+      f Nothing r = r
+      movesPerDir = case dir g of
+        L -> [tryMove g D cs, tryMove g L cs, tryMove g U cs]
+        R -> [tryMove g D cs, tryMove g R cs, tryMove g U cs]
+        U -> [tryMove g L cs, tryMove g U cs, tryMove g R cs]
+        D -> [tryMove g L cs, tryMove g D cs, tryMove g R cs]
 
 manhattan :: Position -> Position -> Float
 manhattan (x, y) (x', y') = abs (x - x') + abs (y - y')
