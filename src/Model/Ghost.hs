@@ -1,18 +1,17 @@
 module Model.Ghost where
 
-import Model.Collidable (Collidable (hitBox), HitBox)
+import Model.Collidable (Collidable (hitBox, collisions, name), HitBox)
 import Model.Constants
-import Model.Maze (Maze, Tile (Floor, Wall), getNeighbouringFloorTiles, getNeighbouringTiles)
 import Model.Move
 
-data GhostType = Blinky | Pinky | Inky | Clyde
+data GhostType = Blinky | Pinky | Inky | Clyde deriving Eq
 
 data Ghost = Ghost {
   ghostType :: GhostType,
   position :: Position,
   direction :: Direction,
   buffer :: [InputBuffer]
-}
+} deriving (Eq)
 
 instance Moveable Ghost where
   pos (Ghost _ p _ _) = p
@@ -26,4 +25,6 @@ instance Moveable Ghost where
   
 
 instance Collidable Ghost where
+  collisions (Ghost {}) = ["wall", "player"]
+  name (Ghost {}) = "ghost"
   hitBox (Ghost _ p@(x, y) _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]

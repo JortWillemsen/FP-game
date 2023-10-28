@@ -5,7 +5,7 @@ module View.View where
 import Data.Maybe (mapMaybe)
 import Model.Ghost (Ghost (Ghost))
 import Graphics.Gloss
-import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
+import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize, FloorType (Trapdoor))
 import Model.Model
 import Model.Move
 import Model.Player
@@ -30,13 +30,13 @@ view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y
 showAll :: WorldState -> Picture
 showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
   | toggled $ menuState state = translate 0 0 (color green (circle 5)) 
-  | isPaused state == Pause = Pictures $ [showPlayer state allAnimations,
-                                  showGhost state, showLives ws state,
-                                  showScore ws state] ++ showMaze state allTextures ++ [showPause ws allTextures]
+  | isPaused state == Pause = Pictures $ showMaze state allTextures ++ [showPlayer state allAnimations,
+                                  showGhost state allAnimations, showLives ws state,
+                                  showScore ws state] ++ [showPause ws allTextures]
 
-  | otherwise = Pictures $ [showPlayer state allAnimations,
-                                  showGhost state, showLives ws state,
-                                  showScore ws state] ++ showMaze state allTextures
+  | otherwise = Pictures $ showMaze state allTextures ++ [showPlayer state allAnimations,
+                                  showGhost state allAnimations, showLives ws state,
+                                  showScore ws state]
 
 showLives :: WorldState -> GameState -> Picture
 showLives ws state = translate y x (Color red $ Scale 0.2 0.2 $ Text (show $ lives state))
@@ -58,25 +58,27 @@ showScore ws state = translate y x (Color white $ Scale 0.2 0.2 $ Text (show $ s
 showPlayer :: GameState -> AllAnimations -> Picture
 showPlayer gstate animations = case player gstate of
   (Player PuckMan (x, y) _ _) -> translate x y $ rotation $ animateTexture anim (time gstate) where
-    anim = eat animations
+    anim = eatAnim animations
     rotation = case direction $ player gstate of
       U -> rotate (-90)
       D -> rotate 90
       L -> scale (-1) 1
       R -> scale 1 1
 
-showGhost :: GameState -> Picture
-showGhost gstate = case blinky gstate of
-  (Ghost _ (x, y) _ _) -> translate x y (color green (circle 5))
+showGhost :: GameState -> AllAnimations -> Picture
+showGhost gstate animations = case blinky gstate of
+  (Ghost _ (x, y) _ _) -> translate x y $ animateTexture anim (time gstate) where anim = blinkyAnim animations
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m
 
 loadTile :: Tile -> AllTextures -> Maybe Picture
-loadTile (Floor (x, y) (Just cType) _) textures = Just $ translate x y (f cType $ collectibleTextures textures)
+loadTile (Floor _ (x, y) (Just cType) _) textures = Just $ translate x y (f cType $ collectibleTextures textures)
   where
     f Energizer = energizer
     f Dot = dot
+
+loadTile (Floor Trapdoor (x, y) _ _) textures = Just $ translate x y (trapdoor $ wallTextures textures) 
 loadTile (Floor {}) _ = Nothing
 loadTile (Wall (x, y) Nothing) textures = Nothing
 loadTile (Wall (x, y) (Just wtype)) textures = Just $ translate x y (f wtype $ wallTextures textures)

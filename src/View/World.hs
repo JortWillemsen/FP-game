@@ -3,20 +3,23 @@ module View.World where
 import Graphics.Gloss
 import Model.Model
 import View.Animation
-import View.File 
+import View.File
+import View.Random (generateSeed)
+import System.Random (StdGen)
 
 data WorldState = WorldState
   { gameState :: GameState,
     textures :: AllTextures,
     animation :: AllAnimations
-  } 
+  }
 
 createWorldState :: Level -> IO WorldState
 createWorldState l =
   do
     textures <- loadTextures
     level <- loadLevel l
-    WorldState (nextState level l) textures <$> loadAnimations
+    seed <- generateSeed
+    WorldState (nextState level l seed) textures <$> loadAnimations
 
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,
@@ -26,11 +29,12 @@ data AllTextures = AllTextures
   }
 
 data AllAnimations = AllAnimations
-  { eat :: Animation
+  { eatAnim :: Animation,
+    blinkyAnim :: Animation
   }
 
-data TextTextures = TextTextures {
-  paused :: Texture
+data TextTextures = TextTextures
+  { paused :: Texture
   }
 
 data WallTextures = WallTextures
@@ -48,7 +52,8 @@ data WallTextures = WallTextures
     stumpW :: Texture,
     pipeH :: Texture,
     pipeV :: Texture,
-    contained :: Texture
+    contained :: Texture,
+    trapdoor :: Texture
   }
 
 data CollectibleTextures = CollectibleTextures
@@ -60,10 +65,13 @@ loadAnimations :: IO AllAnimations
 loadAnimations =
   do
     eatFrames <- mapM loadBMP ["Assets/animations/eat/frame1.bmp", "Assets/animations/eat/frame2.bmp", "Assets/animations/eat/frame3.bmp"]
-
+    blinkyFrames <- mapM loadBMP ["Assets/animations/ghost/Blinky1.bmp", "Assets/animations/ghost/Blinky2.bmp"]
+    
     let eat = Animation 0.5 eatFrames
+    let blinky = Animation 0.5 blinkyFrames
 
-    return $ AllAnimations eat
+    return $ AllAnimations eat blinky
+
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures
 loadTextures =
@@ -93,6 +101,7 @@ loadTextures =
         <*> loadBMP "Assets/walls/wall_pipe_h.bmp"
         <*> loadBMP "Assets/walls/wall_pipe_v.bmp"
         <*> loadBMP "Assets/walls/wall_contained.bmp"
+        <*> loadBMP "Assets/walls/trapdoor.bmp"
 
     -- Creating the all textures structure with all the textures loaded.
     return $ AllTextures wallTextures textTextures collectibleTextures playerTexture
