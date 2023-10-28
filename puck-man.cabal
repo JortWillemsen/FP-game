@@ -11,17 +11,22 @@ executable puck-man
   main-is:             Main.hs
   build-depends:       base >= 4 && < 5,
                        gloss,
+                       containers,
                        random
   hs-source-dirs:      src
-  other-modules:       Controller
-                     , Model
-                     , View
-                     , Maze
-                     , Player
-                     , Move
-                     , Ghost
-                     , Score
-                     , File
-                     , World
-                     , Animation
+  other-modules:       Controller.Controller
+                     , Model.Model
+                     , View.View
+                     , Model.Collidable
+                     , Model.Maze
+                     , Model.Player
+                     , Model.Move
+                     , Model.Ghost
+                     , Model.Score
+                     , Model.Constants
+                     , View.File
+                     , View.World
+                     , View.Animation
+                     , View.Input
+                     , View.Random
   default-language:    Haskell2010
