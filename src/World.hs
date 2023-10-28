@@ -3,29 +3,34 @@ module World where
 import Graphics.Gloss
 import Model
 import Animation
-import File 
+import File
 
 data WorldState = WorldState
   { gameState :: GameState,
     textures :: AllTextures,
     animation :: AllAnimations
-  }
+  } 
 
-initialWorldState :: IO WorldState
-initialWorldState =
+createWorldState :: Level -> IO WorldState
+createWorldState l =
   do
     textures <- loadTextures
-    level <- loadLevel
-    WorldState (initialState level) textures <$> loadAnimations
+    level <- loadLevel l
+    WorldState (nextState level l) textures <$> loadAnimations
 
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,
+    textTextures :: TextTextures,
     collectibleTextures :: CollectibleTextures,
     playerTexture :: Texture
   }
 
 data AllAnimations = AllAnimations
   { eat :: Animation
+  }
+
+data TextTextures = TextTextures {
+  paused :: Texture
   }
 
 data WallTextures = WallTextures
@@ -63,6 +68,9 @@ loadAnimations =
 loadTextures :: IO AllTextures
 loadTextures =
   do
+    textTextures <-
+      TextTextures
+        <$> loadBMP "Assets/text/paused.bmp"
     playerTexture <- loadBMP "Assets/player/puck-man.bmp"
     collectibleTextures <-
       CollectibleTextures
@@ -87,4 +95,4 @@ loadTextures =
         <*> loadBMP "Assets/walls/wall_contained.bmp"
 
     -- Creating the all textures structure with all the textures loaded.
-    return $ AllTextures wallTextures collectibleTextures playerTexture
+    return $ AllTextures wallTextures textTextures collectibleTextures playerTexture

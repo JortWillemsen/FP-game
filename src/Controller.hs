@@ -10,6 +10,7 @@ import System.Random
 import World
 import Score (updateScore, updateHighScores)
 import Ghost (collidesWithPlayer)
+import File (loadLevel)
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState -- gebruik maken van een do-block
@@ -23,7 +24,8 @@ step interval ws@WorldState {gameState = state}
                   time = time state + interval
                 }
           }
-  | gameOver state = initialWorldState -- temporary
+  | gameOver state = createWorldState 1 -- temporary
+  | nextLevel (maze state) = createWorldState (level state + 1)
   | otherwise =
       return $
         ws
@@ -32,19 +34,12 @@ step interval ws@WorldState {gameState = state}
                 { player = makePlayerMove (player state) (maze state),
                   score = fst updatedScore,
                   maze = snd updatedScore,
-                  cooldown = if changeLives /= lives state then 30 else setCoolDown (cooldown state),
-                  lives = changeLives,
                   -- blinky = moveAlgorithm (blinky state) (player state) (maze state),
                   ticks = ticks state + 1,
                   time = time state + interval
                 }
           }
   where
-    setCoolDown n | n /= 0 = n - 1
-                  | otherwise = n
-    changeLives = if collidesWithPlayer (player state) (blinky state) && cooldown state == 0
-                    then lives state - 1
-                    else lives state
     updatedScore = updateScore (position (player state)) (maze state) (score state)
     inputBuffer (Player _ _ ib _) = [y | (_, y, _) <- ib]
 
@@ -55,14 +50,23 @@ input e ws@WorldState {gameState = state} = return ws {gameState = inputKey e st
 gameOver :: GameState -> Bool
 gameOver state = lives state == 0 
 
+nextLevel :: Maze -> Bool 
+nextLevel m = all (== Nothing) [getCollectible m p | (Floor p _ _) <- m]
+
 -- check if a key is pressed down change state, otherwise leave state as it was
 inputKey :: Event -> GameState -> GameState
 inputKey (EventKey (Char c) t _ _) state 
   = case c of 
     'p' | t == Down -> state {isPaused = pauseGame (isPaused state)}
         | t == Up -> state
+    'm' | t == Down -> state {isPaused = Pause, menuState = MenuState { toggled = toggleMenu (toggled $ menuState state), levels = []} }
+        | t == Up -> state 
     _ -> state {player = updateInputBuffer c (player state)}
 inputKey _ state = state
+
+toggleMenu :: Bool -> Bool
+toggleMenu p | p = False
+             | otherwise  = True
 
 makeMove :: Move -> Maze -> Position
 makeMove (pos, potentialPos) m
@@ -81,7 +85,7 @@ makeMove (pos, potentialPos) m
         hitbox p@(x, y) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
 
         intersect :: [Position] -> [Position] -> Bool
-        intersect hitbox s = any (`inSquare` s) hitbox
+        intersect hitbox s = any (`inSquare` s) hitbox 
           where
             inSquare :: Position -> [Position] -> Bool
             inSquare (x, y) [(bLX, bLY), _, (tRX, tRY), _] = x > bLX && y > bLY && x <= tRX && y <= tRY
