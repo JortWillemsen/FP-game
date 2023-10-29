@@ -66,9 +66,11 @@ showPlayer gstate animations = case player gstate of
       R -> scale 1 1
 
 showGhosts :: GameState -> AllAnimations -> Picture
-showGhosts gstate animations = Pictures [showBlinky $ blinky gstate, showPinky $ pinky gstate] where
+showGhosts gstate animations = Pictures [showBlinky $ blinky gstate, showPinky $ pinky gstate, showInky $ inky gstate, showClyde $ clyde gstate] where
   showBlinky (Ghost _ (x, y) _ _) = translate x y $ animateTexture anim (time gstate) where anim = blinkyAnim animations
   showPinky (Ghost _ (x, y) _ _) = translate x y $ animateTexture anim (time gstate) where anim = pinkyAnim animations
+  showInky (Ghost _ (x, y) _ _) = translate x y $ animateTexture anim (time gstate) where anim = inkyAnim animations
+  showClyde (Ghost _ (x, y) _ _) = translate x y $ animateTexture anim (time gstate) where anim = clydeAnim animations
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m

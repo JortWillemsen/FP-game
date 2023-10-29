@@ -38,6 +38,8 @@ data GameState = GameState {
                   , player     :: Player
                   , blinky     :: Ghost
                   , pinky      :: Ghost
+                  , inky       :: Ghost
+                  , clyde      :: Ghost
                   , level      :: Level
                   , menuState  :: MenuState
                   , random     :: StdGen
@@ -58,11 +60,13 @@ nextState level l r =
     (Player PuckMan playerSpawn inputBufferWASD L)  
     (Ghost Blinky (ghostSpawns!!0) D inputBufferWASD)
     (Ghost Pinky (ghostSpawns!!1) U inputBufferWASD) 
+    (Ghost Inky (ghostSpawns!!2) U inputBufferWASD) 
+    (Ghost Clyde (ghostSpawns!!3) U inputBufferWASD) 
     l 
     (MenuState [1] False) 
     random 
     where
       maze = loadMaze level
       (playerSpawn, gen) = randomPlayerSpawn random maze
-      ghostSpawns = randomGhostSpawns gen [1, 2] maze
+      ghostSpawns = randomGhostSpawns gen [1, 2, 3, 4] maze
       random = mkStdGen r
