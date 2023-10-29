@@ -3,7 +3,7 @@
 module View.View where
 
 import Data.Maybe (mapMaybe)
-import Model.Ghost (Ghost (Ghost))
+import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde))
 import Graphics.Gloss
 import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize, FloorType (Trapdoor))
 import Model.Model
@@ -66,11 +66,18 @@ showPlayer gstate animations = case player gstate of
       R -> scale 1 1
 
 showGhosts :: GameState -> AllAnimations -> Picture
-showGhosts gstate animations = Pictures [showBlinky $ blinky gstate, showPinky $ pinky gstate, showInky $ inky gstate, showClyde $ clyde gstate] where
-  showBlinky (Ghost _ (x, y) _ _ _) = translate x y $ animateTexture anim (time gstate) where anim = blinkyAnim animations
-  showPinky (Ghost _ (x, y) _ _ _) = translate x y $ animateTexture anim (time gstate) where anim = pinkyAnim animations
-  showInky (Ghost _ (x, y) _ _ _) = translate x y $ animateTexture anim (time gstate) where anim = inkyAnim animations
-  showClyde (Ghost _ (x, y) _ _ _) = translate x y $ animateTexture anim (time gstate) where anim = clydeAnim animations
+showGhosts gstate animations = Pictures [showGhost s $ blinky gstate, showGhost s $ pinky gstate, showGhost s $ inky gstate, showGhost s $ clyde gstate] where
+  s = scattered gstate
+  showGhost :: Scattered -> Ghost -> Picture
+  showGhost s (Ghost t (x, y) _ _ _) = translate x y $ animateTexture anim (time gstate) 
+    where 
+      anim = case s of
+        Scattered _ -> scatteredAnim animations
+        Normal -> case t of
+          Blinky -> blinkyAnim animations
+          Pinky -> pinkyAnim animations
+          Inky -> inkyAnim animations
+          Clyde -> clydeAnim animations
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m

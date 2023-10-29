@@ -33,7 +33,8 @@ data AllAnimations = AllAnimations
     blinkyAnim :: Animation,
     pinkyAnim :: Animation,
     inkyAnim :: Animation,
-    clydeAnim :: Animation
+    clydeAnim :: Animation,
+    scatteredAnim :: Animation
   }
 
 data TextTextures = TextTextures
@@ -72,14 +73,16 @@ loadAnimations =
     pinkyFrames <- mapM loadBMP ["Assets/animations/ghost/Pinky1.bmp", "Assets/animations/ghost/Pinky2.bmp"]
     inkyFrames <- mapM loadBMP ["Assets/animations/ghost/Inky1.bmp", "Assets/animations/ghost/Inky2.bmp"]
     clydeFrames <- mapM loadBMP ["Assets/animations/ghost/Clyde1.bmp", "Assets/animations/ghost/Clyde2.bmp"]
+    scatteredFrames <- mapM loadBMP ["Assets/animations/ghost/Scattered1.bmp", "Assets/animations/ghost/Scattered2.bmp"]
     let eat = Animation 0.5 eatFrames
     let blinky = Animation 0.5 blinkyFrames
     let pinky = Animation 0.5 pinkyFrames
     let inky = Animation 0.5 inkyFrames
     let clyde = Animation 0.5 clydeFrames
+    let scattered = Animation 0.5 scatteredFrames
 
 
-    return $ AllAnimations eat blinky pinky inky clyde
+    return $ AllAnimations eat blinky pinky inky clyde scattered
 
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures
