@@ -5,10 +5,11 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Model.Maze
 import Model.Model
-import Model.Move (Move, Position, down, left, right, up, Moveable (move), translatePlayer, translateGhost)
+import Model.Move (Move, Position, down, left, right, up, Moveable (move, dir), translatePlayer, translateGhost)
 import Model.Player
 import Model.Score (updateScore)
 import View.World
+import Model.Constants (tileSize)
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
@@ -25,12 +26,14 @@ step interval ws@WorldState {gameState = state}
                   score = fst updatedScore,
                   maze = snd updatedScore,
                   blinky = translateGhost (blinky state) (position $ player state) (maze state),
+                  pinky = translateGhost (pinky state) pinkyTarget (maze state),
                   ticks = ticks state + 1,
                   time = time state + interval
                 }
           }
   where
     updatedScore = updateScore (position (player state)) (maze state) (score state)
+    pinkyTarget = position $ move (player state) (dir $ player state) (tileSize*2)
 
 
 gameOver :: GameState -> Bool

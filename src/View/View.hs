@@ -31,11 +31,11 @@ showAll :: WorldState -> Picture
 showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
   | toggled $ menuState state = translate 0 0 (color green (circle 5)) 
   | isPaused state == Pause = Pictures $ showMaze state allTextures ++ [showPlayer state allAnimations,
-                                  showGhost state allAnimations, showLives ws state,
+                                  showGhosts state allAnimations, showLives ws state,
                                   showScore ws state] ++ [showPause ws allTextures]
 
   | otherwise = Pictures $ showMaze state allTextures ++ [showPlayer state allAnimations,
-                                  showGhost state allAnimations, showLives ws state,
+                                  showGhosts state allAnimations, showLives ws state,
                                   showScore ws state]
 
 showLives :: WorldState -> GameState -> Picture
@@ -65,9 +65,10 @@ showPlayer gstate animations = case player gstate of
       L -> scale (-1) 1
       R -> scale 1 1
 
-showGhost :: GameState -> AllAnimations -> Picture
-showGhost gstate animations = case blinky gstate of
-  (Ghost _ (x, y) _ _) -> translate x y $ animateTexture anim (time gstate) where anim = blinkyAnim animations
+showGhosts :: GameState -> AllAnimations -> Picture
+showGhosts gstate animations = Pictures [showBlinky $ blinky gstate, showPinky $ pinky gstate] where
+  showBlinky (Ghost _ (x, y) _ _) = translate x y $ animateTexture anim (time gstate) where anim = blinkyAnim animations
+  showPinky (Ghost _ (x, y) _ _) = translate x y $ animateTexture anim (time gstate) where anim = pinkyAnim animations
 
 showMaze :: GameState -> AllTextures -> [Picture]
 showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m

@@ -5,7 +5,7 @@ import Model.Ghost
 import Model.Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
 import Model.Player
 import Model.Score
-import Model.Move (Direction(L))
+import Model.Move (Direction(L, U, D))
 import System.Random (StdGen, mkStdGen)
 import Model.Spawning (randomPlayerSpawn, randomGhostSpawns)
 
@@ -37,6 +37,7 @@ data GameState = GameState {
                   , ticks      :: Float
                   , player     :: Player
                   , blinky     :: Ghost
+                  , pinky      :: Ghost
                   , level      :: Level
                   , menuState  :: MenuState
                   , random     :: StdGen
@@ -46,8 +47,22 @@ data MenuState = MenuState { levels :: [Int], toggled :: Bool } -- maybe Toggled
 
 -- Takes level for first time maze generation.
 nextState :: [String] -> Level -> Int -> GameState
-nextState level l r = GameState maze Play initiateLives 0 0 0 (Player PuckMan playerSpawn inputBufferWASD L) (Ghost Blinky ghostSpawn L inputBufferWASD) l (MenuState [1] False) random where
-  maze = loadMaze level
-  (playerSpawn, gen) = randomPlayerSpawn random maze
-  ghostSpawn = head $ randomGhostSpawns gen [1] maze
-  random = mkStdGen r
+nextState level l r = 
+  GameState 
+    maze 
+    Play 
+    initiateLives 
+    0 
+    0 
+    0 
+    (Player PuckMan playerSpawn inputBufferWASD L)  
+    (Ghost Blinky (ghostSpawns!!0) D inputBufferWASD)
+    (Ghost Pinky (ghostSpawns!!1) U inputBufferWASD) 
+    l 
+    (MenuState [1] False) 
+    random 
+    where
+      maze = loadMaze level
+      (playerSpawn, gen) = randomPlayerSpawn random maze
+      ghostSpawns = randomGhostSpawns gen [1, 2] maze
+      random = mkStdGen r

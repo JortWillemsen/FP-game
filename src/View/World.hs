@@ -30,7 +30,8 @@ data AllTextures = AllTextures
 
 data AllAnimations = AllAnimations
   { eatAnim :: Animation,
-    blinkyAnim :: Animation
+    blinkyAnim :: Animation,
+    pinkyAnim :: Animation
   }
 
 data TextTextures = TextTextures
@@ -66,11 +67,14 @@ loadAnimations =
   do
     eatFrames <- mapM loadBMP ["Assets/animations/eat/frame1.bmp", "Assets/animations/eat/frame2.bmp", "Assets/animations/eat/frame3.bmp"]
     blinkyFrames <- mapM loadBMP ["Assets/animations/ghost/Blinky1.bmp", "Assets/animations/ghost/Blinky2.bmp"]
-    
+    pinkyFrames <- mapM loadBMP ["Assets/animations/ghost/Pinky1.bmp", "Assets/animations/ghost/Pinky2.bmp"]
+
     let eat = Animation 0.5 eatFrames
     let blinky = Animation 0.5 blinkyFrames
+    let pinky = Animation 0.5 pinkyFrames
 
-    return $ AllAnimations eat blinky
+
+    return $ AllAnimations eat blinky pinky
 
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures

@@ -19,11 +19,11 @@ data PlayerType
   | BabyPuckMan deriving (Eq)
 
 instance Moveable Player where
-  move p@(Player t (x, y) i _) d
-    | d == U = Player t (up p) i d
-    | d == D = Player t (down p) i d
-    | d == L = Player t (left p) i d
-    | d == R = Player t (right p) i d
+  move p@(Player t (x, y) i _) d s
+    | d == U = Player t (up p s) i d
+    | d == D = Player t (down p s ) i d
+    | d == L = Player t (left p s) i d
+    | d == R = Player t (right p s) i d
   pos (Player _ p _ _) = p
   buffer (Player _ _ i _) = i
   dir (Player _ _ _ d) = d
