@@ -29,4 +29,6 @@ executable puck-man
                      , View.Animation
                      , View.Input
                      , View.Random
+                     , View.Menu
+                     , Model.Spawning
   default-language:    Haskell2010

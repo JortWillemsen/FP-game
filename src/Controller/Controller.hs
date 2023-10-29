@@ -37,4 +37,4 @@ gameOver :: GameState -> Bool
 gameOver state = lives state == 0 
 
 nextLevel :: Maze -> Bool 
-nextLevel m = all (== Nothing) [getCollectible m p | (Floor p _ _) <- m]
+nextLevel m = all (== Nothing) [getCollectible m p | (Floor _ p _ _) <- m]
