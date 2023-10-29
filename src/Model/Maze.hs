@@ -70,6 +70,7 @@ data SpawnPoint
   = FruitSpawn
   | PlayerSpawn
   | GhostSpawn
+  | ScatterSpawn
   deriving (Eq, Show, Ord)
 
 data CornerDirection = Nw | Ne | Sw | Se deriving (Show, Eq, Ord)
@@ -126,6 +127,8 @@ loadRow vs y = loadRow' vs y 0
       | v == 'G' = Floor Path (x, y) Nothing (Just GhostSpawn) : loadRow' vs y (x + tileSize)
       | v == 'F' = Floor Path (x, y) (Just Dot) (Just FruitSpawn) : loadRow' vs y (x + tileSize)
       | v == 'T' = Floor Trapdoor (x, y) Nothing Nothing : loadRow' vs y (x + tileSize)
+      | v == 'S' = Floor Path (x, y) Nothing (Just ScatterSpawn) : loadRow' vs y (x + tileSize)
+
 
 addWallTypesToMaze :: Maze -> Maze
 addWallTypesToMaze m = map (addWallTypeToTile m) m
