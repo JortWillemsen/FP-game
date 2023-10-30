@@ -43,7 +43,9 @@ right :: (Moveable a) => a -> Speed -> Position
 right m s = let (x, y) = pos m in (x + s, y)
 
 manhattan :: Position -> Position -> Float
-manhattan (x, y) (x', y') = abs (x - x') + abs (y - y')
+manhattan (x, y) (x', y') = sqrt (a + b) where
+  a = abs (x' - x) **2
+  b = abs (y' - y) **2
 
 -- Takes a movable with a direction and a list of all possible collisions to check if the move is valid
 tryMove :: (Moveable a, Collidable a, Collidable b) => a -> Direction -> [b] -> Maybe a

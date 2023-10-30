@@ -121,13 +121,14 @@ loadRow vs y = loadRow' vs y 0
     loadRow' [] y x = []
     loadRow' (v : vs) y x
       | v == 'X' = Wall (x, y) Nothing : loadRow' vs y (x + tileSize)
-      | v == 'O' = Floor Path (x, y) (Just Dot) Nothing : loadRow' vs y (x + tileSize)
-      | v == 'E' = Floor Path (x, y) (Just Energizer) Nothing : loadRow' vs y (x + tileSize)
+      | v == '_' = Floor Path (x, y) Nothing Nothing : loadRow' vs y (x + tileSize)
+      | v == 'o' = Floor Path (x, y) (Just Dot) Nothing : loadRow' vs y (x + tileSize)
+      | v == 'O' = Floor Path (x, y) (Just Energizer) Nothing : loadRow' vs y (x + tileSize)
       | v == 'P' = Floor Path (x, y) Nothing (Just PlayerSpawn) : loadRow' vs y (x + tileSize)
       | v == 'G' = Floor Path (x, y) Nothing (Just GhostSpawn) : loadRow' vs y (x + tileSize)
       | v == 'F' = Floor Path (x, y) (Just Dot) (Just FruitSpawn) : loadRow' vs y (x + tileSize)
       | v == 'T' = Floor Trapdoor (x, y) Nothing Nothing : loadRow' vs y (x + tileSize)
-      | v == 'S' = Floor Path (x, y) Nothing (Just ScatterSpawn) : loadRow' vs y (x + tileSize)
+      | v == 'S' = Floor Path (x, y) (Just Dot) (Just ScatterSpawn) : loadRow' vs y (x + tileSize)
 
 
 addWallTypesToMaze :: Maze -> Maze
