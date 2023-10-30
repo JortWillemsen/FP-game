@@ -42,30 +42,6 @@ left m s = let (x, y) = pos m in (x - s, y)
 right :: (Moveable a) => a -> Speed -> Position
 right m s = let (x, y) = pos m in (x + s, y)
 
-translatePlayer :: (Moveable a, Collidable a, Collidable b) => a -> [b] -> a
-translatePlayer m cs = 
-  let (_, _, d) = head $ filter (\(_, t, a) -> t == Depressed) (buffer m) in
-    case tryMove m d cs of 
-      Nothing -> case tryMove m (dir m) cs of
-        Nothing -> m
-        Just p' -> p'
-      Just p -> p
-
-translateGhost :: (Moveable a, Collidable a, Collidable c) => a -> Position -> [c] -> a
-translateGhost g p cs = if length sortedMoves < 1
-  then move g (inverse $ dir g) speed
-  else fst $ head sortedMoves 
-    where
-      sortedMoves = sortBy (compare `on` snd) possibleMoves
-      possibleMoves = foldr f [] movesPerDir
-      f (Just x) r = (x, manhattan (pos x) p) : r
-      f Nothing r = r
-      movesPerDir = case dir g of
-        L -> [tryMove g D cs, tryMove g L cs, tryMove g U cs]
-        R -> [tryMove g D cs, tryMove g R cs, tryMove g U cs]
-        U -> [tryMove g L cs, tryMove g U cs, tryMove g R cs]
-        D -> [tryMove g L cs, tryMove g D cs, tryMove g R cs]
-
 manhattan :: Position -> Position -> Float
 manhattan (x, y) (x', y') = abs (x - x') + abs (y - y')
 

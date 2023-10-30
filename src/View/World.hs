@@ -34,7 +34,7 @@ data AllAnimations = AllAnimations
     pinkyAnim :: Animation,
     inkyAnim :: Animation,
     clydeAnim :: Animation,
-    scatteredAnim :: Animation
+    frightenedAnim :: Animation
   }
 
 data TextTextures = TextTextures

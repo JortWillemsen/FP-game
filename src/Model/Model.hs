@@ -8,8 +8,7 @@ import Model.Score
 import Model.Move (Direction(L, U, D))
 import System.Random (StdGen, mkStdGen)
 import Model.Spawning (randomPlayerSpawn, randomGhostSpawns, randomScatterSpawns)
-
-type Time = Float
+import Model.Constants (scatterTime)
 
 interval :: Time
 interval = 0.033
@@ -19,7 +18,6 @@ data IsPaused = Play | Pause
 
 type Lives = Int
 type Level = Int
-data Scattered = Scattered Time | Normal
 
 initiateLives :: Lives
 initiateLives = 3
@@ -41,10 +39,9 @@ data GameState = GameState {
                   , pinky      :: Ghost
                   , inky       :: Ghost
                   , clyde      :: Ghost
-                  , scattered  :: Scattered
                   , level      :: Level
                   , menuState  :: MenuState
-                  , random     :: StdGen
+                  , generator     :: StdGen
                 } 
 
 data MenuState = MenuState { levels :: [Int], toggled :: Bool } -- maybe Toggled type 
@@ -60,11 +57,10 @@ nextState level l r =
     0 
     0 
     (Player PuckMan playerSpawn inputBufferWASD L)  
-    (Ghost Blinky (ghostSpawns!!0)  D (scatterSpawns!!0) inputBufferWASD)
-    (Ghost Pinky (ghostSpawns!!1) U (scatterSpawns!!1) inputBufferWASD) 
-    (Ghost Inky (ghostSpawns!!2) U (scatterSpawns!!2) inputBufferWASD) 
-    (Ghost Clyde (ghostSpawns!!3) U (scatterSpawns!!3) inputBufferWASD)
-    (Scattered 20)
+    (Ghost Blinky (ghostSpawns!!0)  D (scatterSpawns!!0) (Scattered scatterTime) inputBufferWASD)
+    (Ghost Pinky (ghostSpawns!!1) U (scatterSpawns!!1) (Scattered scatterTime) inputBufferWASD) 
+    (Ghost Inky (ghostSpawns!!2) U (scatterSpawns!!2) (Scattered scatterTime) inputBufferWASD) 
+    (Ghost Clyde (ghostSpawns!!3) U (scatterSpawns!!3) (Scattered scatterTime) inputBufferWASD)
     l 
     (MenuState [1] False) 
     random 

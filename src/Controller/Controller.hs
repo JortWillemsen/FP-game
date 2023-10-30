@@ -2,14 +2,15 @@ module Controller.Controller where
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
-import Model.Constants (tileSize)
-import Model.Ghost (Ghost (Ghost))
-import Model.Maze
+import Model.Constants (tileSize, scatterTime, normalTime)
+import Model.Ghost (Ghost (Ghost, wellbeing, ghostType), sPos, Wellbeing (Normal, Scattered, Frightened), Time, GhostType (Blinky, Pinky, Inky, Clyde), getTime, translateGhost)
+import Model.Maze (Maze, Tile (Floor), getCollectible)
 import Model.Model
-import Model.Move (Move, Moveable (dir, move), Position, down, left, right, translateGhost, translatePlayer, up)
+import Model.Move (Move, Moveable (dir, move, pos), Position, down, left, manhattan, right, up)
 import Model.Player
 import Model.Score (updateScore)
 import View.World
+import System.Random
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
@@ -25,30 +26,46 @@ step interval ws@WorldState {gameState = state}
                 { player = translatePlayer (player state) (maze state),
                   score = fst updatedScore,
                   maze = snd updatedScore,
-                  blinky = translateGhost (blinky state) (ghostTarget (blinky state) (scattered state) blinkyTarget) (maze state),
-                  pinky = translateGhost (pinky state) (ghostTarget (pinky state) (scattered state) pinkyTarget) (maze state),
-                  inky = translateGhost (inky state) (ghostTarget (inky state) (scattered state) inkyTarget) (maze state),
-                  clyde = translateGhost (clyde state) (ghostTarget (clyde state) (scattered state) clydeTarget) (maze state),
-                  scattered = checkScattered (scattered state) interval,
+                  blinky =  updateGhost (blinky state) interval state,
+                  pinky = updateGhost (pinky state) interval state,
+                  inky = updateGhost (inky state) interval state,
+                  clyde = updateGhost (clyde state) interval state,
                   ticks = ticks state + 1,
-                  time = time state + interval
+                  time = time state + interval,
+                  generator = snd $ (random :: StdGen -> (Int, StdGen)) (generator state)
                 }
           }
   where
     updatedScore = updateScore (position (player state)) (maze state) (score state)
-    ghostTarget :: Ghost -> Scattered -> Position -> Position
-    ghostTarget g Normal t = t
-    ghostTarget (Ghost _ _ _ s _) (Scattered _) _ = s
-    blinkyTarget = position $ player state
-    pinkyTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
-    inkyTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
-    clydeTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
 
-checkScattered :: Scattered -> Time -> Scattered
-checkScattered Normal i = Normal
-checkScattered (Scattered t) i = if (t - i) <= 0
-  then Normal
-  else Scattered (t-i)
+updateGhost :: Ghost -> Time -> GameState -> Ghost
+updateGhost ghost@(Ghost t p d sp w ib) interval state = translateGhost (Ghost t p d sp (updateWellbeing w interval) ib) (generator state) (ghostTarget ghost) (maze state)  where
+  ghostTarget :: Ghost -> Position
+  ghostTarget g = case wellbeing g of
+    (Scattered _) -> sPos g
+    otherwise -> case ghostType g of
+      Blinky -> blinkyTarget
+      Pinky -> pinkyTarget
+      Inky -> inkyTarget
+      Clyde -> clydeTarget
+  blinkyTarget = position $ player state
+  pinkyTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
+  inkyTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
+  clydeTarget =
+    if (manhattan (pos $ clyde state) (pos $ player state) < 5)
+      then sPos (clyde state)
+      else position $ player state
+
+updateWellbeing :: Wellbeing -> Time -> Wellbeing
+updateWellbeing w i = if (getTime w - i) <= 0
+  then case w of
+    (Normal _) -> Scattered scatterTime
+    (Scattered _) -> Normal normalTime
+    (Frightened _) -> Scattered scatterTime
+  else case w of
+    (Normal t) -> Normal (t-i)
+    (Scattered t) -> Scattered (t-i)
+    (Frightened t) -> Frightened (t-i)
 
 gameOver :: GameState -> Bool
 gameOver state = lives state == 0
