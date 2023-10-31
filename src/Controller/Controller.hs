@@ -3,20 +3,21 @@ module Controller.Controller where
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Model.Constants (tileSize, scatterTime, normalTime)
-import Model.Ghost (Ghost (Ghost, wellbeing, ghostType, spawnPoint), sPos, Wellbeing (Normal, Scattered, Frightened, Spawning), Time, GhostType (Blinky, Pinky, Inky, Clyde), getTime, translateGhost)
+import Model.Ghost (Ghost (Ghost, wellbeing, ghostType, spawnPoint), sPos, Wellbeing (Normal, Scattered, Frightened, Spawning), GhostType (Blinky, Pinky, Inky, Clyde), getTime, translateGhost)
 import Model.Maze (Maze, Tile (Floor), getCollectible)
 import Model.Model
-import Model.Move (Move, Moveable (dir, move, pos), Position, down, left, manhattan, right, up)
+import Model.Move (Move, Position, down, left, right, up, Moveable (move, dir, pos), Toggled (Released, Depressed), manhattan)
 import Model.Player
-import Model.Score (updateScore)
+import Model.Score (updateScore, updateHighScores)
 import View.World
+import View.File (saveHighScores)
 import System.Random
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
-  | isPaused state == Pause = return ws
-  | gameOver state = createWorldState 1 -- temporary
+  | pauseToggle (screenState state) == Depressed = return ws
+  | gameOver state = handleGameOver (gameState ws)
   | nextLevel (maze state) = createWorldState (level state + 1)
   | otherwise =
       return $
@@ -24,8 +25,8 @@ step interval ws@WorldState {gameState = state}
           { gameState =
               state
                 { player = translatePlayer (player state) (maze state),
-                  score = fst updatedScore,
-                  maze = snd updatedScore,
+                  score = updatedScore,
+                  maze = updatedMaze,
                   blinky =  updateGhost (blinky state) interval state,
                   pinky = updateGhost (pinky state) interval state,
                   inky = updateGhost (inky state) interval state,
@@ -36,7 +37,12 @@ step interval ws@WorldState {gameState = state}
                 }
           }
   where
-    updatedScore = updateScore (position (player state)) (maze state) (score state)
+    (updatedScore, updatedMaze) = updateScore (position (player state)) (maze state) (score state)
+
+handleGameOver :: GameState -> IO WorldState
+handleGameOver state = do 
+  saveHighScores (show $ playerType $ player state, score state) 
+  createWorldState 1  
 
 updateGhost :: Ghost -> Time -> GameState -> Ghost
 updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Ghost t p sp d scp (updateWellbeing w interval) ib) (generator state) (ghostTarget ghost) (maze state)  where

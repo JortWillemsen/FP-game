@@ -1,7 +1,7 @@
 module Main where
 
 import Controller.Controller
-import Graphics.Gloss (loadBMP)
+import Graphics.Gloss (loadBMP, Display (FullScreen))
 import Graphics.Gloss.Interface.Environment (getScreenSize)
 import Graphics.Gloss.Interface.IO.Game
 import Model.Maze (getMazeSize)
@@ -14,7 +14,7 @@ main :: IO ()
 main = do
   state <- createWorldState 1
   playIO
-    (InWindow "Puck-Man" (calculateScreenSize state) (0, 0)) -- Or FullScreen
+    FullScreen
     black -- Background color
     30 -- Frames per second
     state -- Initial state

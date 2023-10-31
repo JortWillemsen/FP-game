@@ -3,12 +3,13 @@ module View.World where
 import Graphics.Gloss
 import Model.Model
 import View.Animation
-import View.File
+import View.File( loadLevel, loadCustomLevel, loadHighScores ) 
 import View.Random (generateSeed)
 import System.Random (StdGen)
 
 data WorldState = WorldState
   { gameState :: GameState,
+    highScores :: HighScores,
     textures :: AllTextures,
     animation :: AllAnimations
   }
@@ -17,9 +18,22 @@ createWorldState :: Level -> IO WorldState
 createWorldState l =
   do
     textures <- loadTextures
-    level <- loadLevel l
+    level <- loadLevel l 
+    highscores <- loadHighScores
     seed <- generateSeed
-    WorldState (nextState level l seed) textures <$> loadAnimations
+    WorldState (nextState level l seed) highscores textures <$> loadAnimations
+
+createCustomWorldState :: Level -> IO WorldState
+createCustomWorldState l =
+  do
+    textures <- loadTextures
+    level <- loadCustomLevel l
+    highscores <- loadHighScores 
+    seed <- generateSeed
+    WorldState (nextState level l seed) highscores textures <$> loadAnimations
+
+
+type HighScores = [String]
 
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,
@@ -39,8 +53,9 @@ data AllAnimations = AllAnimations
     energizerAnim :: Animation
   }
 
-data TextTextures = TextTextures
-  { paused :: Texture
+data TextTextures = TextTextures {
+  paused :: Texture,
+  menu :: Texture
   }
 
 data WallTextures = WallTextures
@@ -97,6 +112,7 @@ loadTextures =
     textTextures <-
       TextTextures
         <$> loadBMP "Assets/text/paused.bmp"
+        <*> loadBMP "Assets/text/menu.bmp"
     playerTexture <- loadBMP "Assets/player/puck-man.bmp"
     collectibleTextures <-
       CollectibleTextures

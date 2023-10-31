@@ -1,20 +1,19 @@
 module Model.Model where
   
 
-import Model.Ghost
+import Model.Ghost (Ghost(Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Spawning))
 import Model.Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn), pos)
 import Model.Player
 import Model.Score
-import Model.Move (Direction(L, U, D, R))
+import Model.Move (Direction(L, U, D, R), Toggled (Released))
 import System.Random (StdGen, mkStdGen)
 import Model.Spawning (randomPlayerSpawn, randomGhostSpawns, randomScatterSpawns)
 import Model.Constants (scatterTime)
 
+type Time = Float
+
 interval :: Time
 interval = 0.033
-
-data IsPaused = Play | Pause
-                deriving (Show, Eq)
 
 type Lives = Int
 type Level = Int
@@ -22,14 +21,8 @@ type Level = Int
 initiateLives :: Lives
 initiateLives = 3
 
--- Pauses or unpauses game 
-pauseGame :: IsPaused -> IsPaused -- HIER OF CONTROLLER?
-pauseGame p | p == Pause = Play
-            | otherwise  = Pause
-
 data GameState = GameState {
                     maze       :: Maze
-                  , isPaused   :: IsPaused
                   , lives      :: Lives
                   , score      :: Score
                   , time       :: Time
@@ -40,18 +33,19 @@ data GameState = GameState {
                   , inky       :: Ghost
                   , clyde      :: Ghost
                   , level      :: Level
-                  , menuState  :: MenuState
+                  , screenState :: ScreenState
                   , generator     :: StdGen
                 } 
 
-data MenuState = MenuState { levels :: [Int], toggled :: Bool } -- maybe Toggled type 
+data ScreenState = ScreenState { highscoreToggle :: Toggled
+                               , menuToggle :: Toggled
+                               , pauseToggle :: Toggled } -- maybe Toggled type 
 
 -- Takes level for first time maze generation.
 nextState :: [String] -> Level -> Int -> GameState
 nextState level l r = 
   GameState 
-    maze 
-    Play 
+    maze  
     initiateLives 
     0 
     0 
@@ -62,7 +56,7 @@ nextState level l r =
     (Ghost Inky (ghostSpawns!!2) (ghostSpawns!!2) L (scatterSpawns!!2) (Spawning 10) inputBufferWASD) 
     (Ghost Clyde (ghostSpawns!!3) (ghostSpawns!!3) R (scatterSpawns!!3) (Spawning 20) inputBufferWASD)
     l 
-    (MenuState [1] False) 
+    (ScreenState Released Released Released) 
     random 
     where
       maze = loadMaze level

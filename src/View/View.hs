@@ -3,7 +3,7 @@
 module View.View where
 
 import Data.Maybe (mapMaybe)
-import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Scattered, Normal, Frightened, Spawning), Time)
+import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Scattered, Normal, Frightened, Spawning))
 import Graphics.Gloss
 import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize, FloorType (Trapdoor))
 import Model.Model
@@ -11,6 +11,8 @@ import Model.Move
 import Model.Player
 import View.World
 import View.Animation
+import Debug.Trace
+import View.File (loadHighScores)
 
 textureSize :: Float
 textureSize = 16.0
@@ -18,42 +20,55 @@ textureSize = 16.0
 scalingFactor :: Float
 scalingFactor = 1.5
 
+centerOfMaze :: (Float, Float) -> (Float, Float)
+centerOfMaze (x, y) = (abs x / scalingFactor, abs y / scalingFactor)
+
 calculateScreenSize :: WorldState -> (Int, Int)
-calculateScreenSize ws = let (x, y) = getMazeSize (maze $ gameState ws) in (round (x * scalingFactor), round (y * scalingFactor + 40))
+calculateScreenSize ws = let (x, y) = getMazeSize (maze $ gameState ws) in (round (x * scalingFactor), round (y * scalingFactor))
 
 offset :: (Int, Int) -> (Float, Float)
 offset (x, y) = (-(fromIntegral x / 2), -(fromIntegral y / 2))
 
 view :: WorldState -> IO Picture
-view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll ws
+view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll s ws where
+  s = offset $ calculateScreenSize ws
 
-showAll :: WorldState -> Picture
-showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
-  | toggled $ menuState state = translate 0 0 (color green (circle 5)) 
-  | isPaused state == Pause = Pictures $ showMaze state allTextures allAnimations (time state) ++ [showPlayer state allAnimations,
-                                  showGhosts state allAnimations, showLives ws state,
-                                  showScore ws state] ++ [showPause ws allTextures]
+showAll :: (Float, Float) -> WorldState -> Picture
+showAll s ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
+  | menuToggle (screenState state) == Depressed = showMenu s allTextures
+  | highscoreToggle (screenState state) == Depressed = showHighScores s ws
+  | pauseToggle (screenState state) == Depressed = Pictures $ base ++ [showPause s allTextures]
+  | otherwise = Pictures base
+    where
+      base = showMaze state allTextures allAnimations (time state) ++ [showPlayer state allAnimations,
+                                  showGhosts state allAnimations, showLives s state,
+                                  showScore s state]
 
-  | otherwise = Pictures $ showMaze state allTextures allAnimations (time state) ++ [showPlayer state allAnimations,
-                                  showGhosts state allAnimations, showLives ws state,
-                                  showScore ws state]
+showLives :: (Float, Float) -> GameState -> Picture -- Hearts
+showLives s state = translate (abs x + x - 110) (abs y + y) (Color red $ Scale 0.2 0.2 $ Text ("Lives: " ++ (show $ lives state)))
+  where 
+    (x, y) = centerOfMaze s
 
-showLives :: WorldState -> GameState -> Picture
-showLives ws state = translate y x (Color red $ Scale 0.2 0.2 $ Text (show $ lives state))
+showPause :: (Float, Float) -> AllTextures -> Picture
+showPause s text = translate x y (paused $ textTextures text)
   where
-    c = calculateScreenSize ws
-    x = fromIntegral $ fst c + 20
-    y = fromIntegral $ snd c `div` 2
+    (x, y) = centerOfMaze s
 
-showPause :: WorldState -> AllTextures -> Picture
-showPause ws text = translate 225 225 (paused $ textTextures text)
+showScore :: (Float, Float) -> GameState -> Picture
+showScore s state = translate (abs x - x + 10) (abs y + y) (Color white $ Scale 0.2 0.2 $ Text ("Score: " ++ (show $ score state)))
+  where 
+    (x, y) = centerOfMaze s
 
-showScore :: WorldState -> GameState -> Picture
-showScore ws state = translate y x (Color white $ Scale 0.2 0.2 $ Text (show $ score state))
+showMenu :: (Float, Float) -> AllTextures -> Picture
+showMenu s text = translate x y (menu $ textTextures text)
   where
-    c = calculateScreenSize ws
-    x = fromIntegral $ fst c + 20
-    y = fromIntegral $ snd c `div` 2 - 230
+    (x, y) = centerOfMaze s
+
+showHighScores :: (Float, Float) -> WorldState -> Picture
+showHighScores s ws = translate x y (Color white $ Scale 0.2 0.2 text)
+  where
+    text = Pictures $ zipWith (\line y -> translate 0 y (Text line)) (highScores ws) [0, - 120..]
+    (x, y) = centerOfMaze s
 
 showPlayer :: GameState -> AllAnimations -> Picture
 showPlayer gstate animations = case player gstate of
