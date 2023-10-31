@@ -2,8 +2,8 @@ module View.Animation where
 
 import Graphics.Gloss (Picture)
 import GHC.Float (int2Float)
-import Model.Model (Time)
 import Data.Fixed (mod')
+import Model.Ghost (Time)
 
 data Animation = Animation Duration [Texture]
 type Duration = Float

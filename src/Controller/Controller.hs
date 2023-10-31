@@ -1,14 +1,16 @@
 module Controller.Controller where
 
-import Model.Ghost (Ghost)
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
-import Model.Maze
+import Model.Constants (tileSize, scatterTime, normalTime)
+import Model.Ghost (Ghost (Ghost, wellbeing, ghostType, spawnPoint), sPos, Wellbeing (Normal, Scattered, Frightened, Spawning), Time, GhostType (Blinky, Pinky, Inky, Clyde), getTime, translateGhost)
+import Model.Maze (Maze, Tile (Floor), getCollectible)
 import Model.Model
-import Model.Move (Move, Position, down, left, right, up, Moveable (move), translatePlayer, translateGhost)
+import Model.Move (Move, Moveable (dir, move, pos), Position, down, left, manhattan, right, up)
 import Model.Player
 import Model.Score (updateScore)
 import View.World
+import System.Random
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
@@ -24,17 +26,55 @@ step interval ws@WorldState {gameState = state}
                 { player = translatePlayer (player state) (maze state),
                   score = fst updatedScore,
                   maze = snd updatedScore,
-                  blinky = translateGhost (blinky state) (position $ player state) (maze state),
+                  blinky =  updateGhost (blinky state) interval state,
+                  pinky = updateGhost (pinky state) interval state,
+                  inky = updateGhost (inky state) interval state,
+                  clyde = updateGhost (clyde state) interval state,
                   ticks = ticks state + 1,
-                  time = time state + interval
+                  time = time state + interval,
+                  generator = snd $ (random :: StdGen -> (Int, StdGen)) (generator state)
                 }
           }
   where
     updatedScore = updateScore (position (player state)) (maze state) (score state)
 
+updateGhost :: Ghost -> Time -> GameState -> Ghost
+updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Ghost t p sp d scp (updateWellbeing w interval) ib) (generator state) (ghostTarget ghost) (maze state)  where
+  ghostTarget :: Ghost -> Position
+  ghostTarget g = case wellbeing g of
+    (Spawning _) -> spawnPoint g
+    (Scattered _) -> sPos g
+    otherwise -> case ghostType g of
+      Blinky -> blinkyTarget
+      Pinky -> pinkyTarget
+      Inky -> inkyTarget
+      Clyde -> clydeTarget
+  blinkyTarget = position $ player state
+  pinkyTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
+  inkyTarget = 
+    let (x, y) = position $ move (player state) (dir $ player state) (tileSize * 2) 
+        distance = manhattan (pos $ blinky state) (position $ player state) in
+          (x + distance, y + distance)
+  clydeTarget =
+    if manhattan (pos $ clyde state) (pos $ player state) < 5
+      then sPos (clyde state)
+      else position $ player state
+
+updateWellbeing :: Wellbeing -> Time -> Wellbeing
+updateWellbeing w i = if (getTime w - i) <= 0
+  then case w of
+    (Normal _) -> Scattered scatterTime
+    (Scattered _) -> Normal normalTime
+    (Frightened _) -> Scattered scatterTime
+    (Spawning _) -> Normal normalTime
+  else case w of
+    (Normal t) -> Normal (t-i)
+    (Scattered t) -> Scattered (t-i)
+    (Frightened t) -> Frightened (t-i)
+    (Spawning t) -> Spawning (t-i)
 
 gameOver :: GameState -> Bool
-gameOver state = lives state == 0 
+gameOver state = lives state == 0
 
-nextLevel :: Maze -> Bool 
+nextLevel :: Maze -> Bool
 nextLevel m = all (== Nothing) [getCollectible m p | (Floor _ p _ _) <- m]

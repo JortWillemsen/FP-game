@@ -3,7 +3,7 @@
 module View.View where
 
 import Data.Maybe (mapMaybe)
-import Model.Ghost (Ghost (Ghost))
+import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Scattered, Normal, Frightened, Spawning), Time)
 import Graphics.Gloss
 import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize, FloorType (Trapdoor))
 import Model.Model
@@ -30,12 +30,12 @@ view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y
 showAll :: WorldState -> Picture
 showAll ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
   | toggled $ menuState state = translate 0 0 (color green (circle 5)) 
-  | isPaused state == Pause = Pictures $ showMaze state allTextures ++ [showPlayer state allAnimations,
-                                  showGhost state allAnimations, showLives ws state,
+  | isPaused state == Pause = Pictures $ showMaze state allTextures allAnimations (time state) ++ [showPlayer state allAnimations,
+                                  showGhosts state allAnimations, showLives ws state,
                                   showScore ws state] ++ [showPause ws allTextures]
 
-  | otherwise = Pictures $ showMaze state allTextures ++ [showPlayer state allAnimations,
-                                  showGhost state allAnimations, showLives ws state,
+  | otherwise = Pictures $ showMaze state allTextures allAnimations (time state) ++ [showPlayer state allAnimations,
+                                  showGhosts state allAnimations, showLives ws state,
                                   showScore ws state]
 
 showLives :: WorldState -> GameState -> Picture
@@ -65,23 +65,32 @@ showPlayer gstate animations = case player gstate of
       L -> scale (-1) 1
       R -> scale 1 1
 
-showGhost :: GameState -> AllAnimations -> Picture
-showGhost gstate animations = case blinky gstate of
-  (Ghost _ (x, y) _ _) -> translate x y $ animateTexture anim (time gstate) where anim = blinkyAnim animations
+showGhosts :: GameState -> AllAnimations -> Picture
+showGhosts gstate animations = Pictures [showGhost $ blinky gstate, showGhost $ pinky gstate, showGhost $ inky gstate, showGhost $ clyde gstate] where
+  showGhost :: Ghost -> Picture
+  showGhost (Ghost t (x, y) _ _ _ w _) = translate x y $ animateTexture anim (time gstate) 
+    where 
+      anim = case w of
+        Spawning _ -> frightenedAnim animations
+        otherwise -> case t of
+          Blinky -> blinkyAnim animations
+          Pinky -> pinkyAnim animations
+          Inky -> inkyAnim animations
+          Clyde -> clydeAnim animations
 
-showMaze :: GameState -> AllTextures -> [Picture]
-showMaze s@GameState {maze = m} textures = mapMaybe (`loadTile` textures) m
+showMaze :: GameState -> AllTextures -> AllAnimations -> Time -> [Picture]
+showMaze s@GameState {maze = m} textures animations time = mapMaybe (\x -> loadTile x textures animations time) m
 
-loadTile :: Tile -> AllTextures -> Maybe Picture
-loadTile (Floor _ (x, y) (Just cType) _) textures = Just $ translate x y (f cType $ collectibleTextures textures)
+loadTile :: Tile -> AllTextures -> AllAnimations -> Time -> Maybe Picture
+loadTile (Floor _ (x, y) (Just cType) _) textures animations time = Just $ translate x y (f cType)
   where
-    f Energizer = energizer
-    f Dot = dot
+    f Energizer = animateTexture (energizerAnim animations) time
+    f Dot = dot $ collectibleTextures textures
 
-loadTile (Floor Trapdoor (x, y) _ _) textures = Just $ translate x y (trapdoor $ wallTextures textures) 
-loadTile (Floor {}) _ = Nothing
-loadTile (Wall (x, y) Nothing) textures = Nothing
-loadTile (Wall (x, y) (Just wtype)) textures = Just $ translate x y (f wtype $ wallTextures textures)
+loadTile (Floor Trapdoor (x, y) _ _) textures _ _ = Just $ translate x y (trapdoor $ wallTextures textures) 
+loadTile (Floor {}) _ _ _ = Nothing
+loadTile (Wall (x, y) Nothing) textures _ _ = Nothing
+loadTile (Wall (x, y) (Just wtype)) textures _ _ = Just $ translate x y (f wtype $ wallTextures textures)
   where
     f (Corner Nw) = cornerNw
     f (Corner Ne) = cornerNe
