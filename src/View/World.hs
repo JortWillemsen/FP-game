@@ -3,10 +3,12 @@ module View.World where
 import Graphics.Gloss
 import Model.Model
 import View.Animation
-import View.File 
+import View.File ( loadLevel, loadCustomLevel, loadHighScores ) 
+
 
 data WorldState = WorldState
   { gameState :: GameState,
+    highScores :: HighScores,
     textures :: AllTextures,
     animation :: AllAnimations
   } 
@@ -15,8 +17,20 @@ createWorldState :: Level -> IO WorldState
 createWorldState l =
   do
     textures <- loadTextures
-    level <- loadLevel l
-    WorldState (nextState level l) textures <$> loadAnimations
+    level <- loadLevel l 
+    highscores <- loadHighScores
+    WorldState (nextState level l) highscores textures <$> loadAnimations
+
+createCustomWorldState :: Level -> IO WorldState
+createCustomWorldState l =
+  do
+    textures <- loadTextures
+    level <- loadCustomLevel l
+    highscores <- loadHighScores 
+    WorldState (nextState level l) highscores textures <$> loadAnimations
+
+
+type HighScores = [String]
 
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,
@@ -30,7 +44,8 @@ data AllAnimations = AllAnimations
   }
 
 data TextTextures = TextTextures {
-  paused :: Texture
+  paused :: Texture,
+  menu :: Texture
   }
 
 data WallTextures = WallTextures
@@ -71,6 +86,7 @@ loadTextures =
     textTextures <-
       TextTextures
         <$> loadBMP "Assets/text/paused.bmp"
+        <*> loadBMP "Assets/text/menu.bmp"
     playerTexture <- loadBMP "Assets/player/puck-man.bmp"
     collectibleTextures <-
       CollectibleTextures

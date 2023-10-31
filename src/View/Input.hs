@@ -5,20 +5,32 @@ import Model.Model
 import View.World
 import Model.Player (Player(Player))
 import Model.Move ( InputBuffer, Toggled(Released, Depressed) )
-import View.Menu
+import GHC.Real (fromIntegral)
+import View.World (createCustomWorldState)
+
+toggle :: Toggled -> Toggled
+toggle t | t == Released = Depressed
+         | otherwise = Released
 
 input :: Event -> WorldState -> IO WorldState
-input e ws@WorldState {gameState = state} = return ws {gameState = handleKey e state}
+input e ws@WorldState {gameState = state} = handleKey e state ws
 
 -- Handle pause key
-handleKey :: Event -> GameState -> GameState
-handleKey (EventKey (Char c) t _ _) state
-  | c == 'p' && t == Down = state {isPaused = pauseGame (isPaused state)}
-  | c == 'p' && t == Up = state
-  | c == 'm' && t == Down = state {isPaused = Pause, menuState = MenuState { toggled = toggleMenu (toggled $ menuState state), levels = []} }
-  | c == 'm' && t == Up = state 
-  | otherwise = state {player = updateInputForPlayer c (player state)}
-handleKey _ state = state
+handleKey :: Event -> GameState -> WorldState -> IO WorldState
+handleKey (EventKey (Char c) t _ _) state ws
+  | c == 'p' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = toggle (pauseToggle $ screenState state)
+                                                        , menuToggle = Released
+                                                        , highscoreToggle = Released}}}
+  | c == 'm' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = Depressed
+                                                                                    , menuToggle = toggle (menuToggle $ screenState state)
+                                                                                    , highscoreToggle = Released}}}
+  | c == 'h' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = Depressed
+                                                                                    , menuToggle = Released
+                                                                                    , highscoreToggle = toggle (highscoreToggle $ screenState state)}}}
+  | c `elem` ['1', '2', '3', '4', '5'] = createCustomWorldState (read [c])
+  | c `elem` ['w', 'a', 's', 'd'] = return ws {gameState = state {player = updateInputForPlayer c (player state)}}
+  | otherwise = return ws {gameState = state }
+handleKey _ state ws = return ws {gameState = state }
 
 -- updates the input buffer of a player when a key is pressed
 updateInputForPlayer :: Char -> Player -> Player

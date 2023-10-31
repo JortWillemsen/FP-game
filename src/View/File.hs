@@ -12,6 +12,14 @@ loadLevel i = do
 --                     else readFile "level/level/1.txt"
     return $ lines level
 
+loadCustomLevel :: Level -> IO [String]
+loadCustomLevel i = do
+    level <- readFile ("level/custom/" ++ show i ++ ".txt")
+--   let fileName = "level/level/" ++ show i ++ ".txt"
+--       level    = if doesFileExist fileName
+--                     then readFile fileName
+--                     else readFile "level/level/1.txt"
+    return $ lines level
 
 loadHighScores :: IO [String]
 loadHighScores = do

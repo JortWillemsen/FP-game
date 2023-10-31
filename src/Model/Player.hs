@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 module Model.Player where
 
 import Model.Collidable (Collidable (hitBox))
@@ -17,6 +18,12 @@ data PlayerType
   | MsPuckMan
   | JrPuckMan
   | BabyPuckMan
+
+instance Show PlayerType where 
+  show PuckMan = "Puck-Man"
+  show MsPuckMan = "Ms. Puck-Man"
+  show JrPuckMan = "Jr. Puck-Man"
+  show BabyPuckMan = "Baby Puck-Man"
 
 instance Moveable Player where
   move p@(Player t (x, y) i _) d
