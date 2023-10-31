@@ -12,7 +12,7 @@ import View.Input
 
 main :: IO ()
 main = do
-  state <- createWorldState 1
+  state <- createWorldState 2
   playIO
     (InWindow "Puck-Man" (calculateScreenSize state) (0, 0)) -- Or FullScreen
     black -- Background color
