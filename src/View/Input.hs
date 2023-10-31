@@ -34,7 +34,7 @@ handleKey _ state ws = return ws {gameState = state }
 
 -- updates the input buffer of a player when a key is pressed
 updateInputForPlayer :: Char -> Player -> Player
-updateInputForPlayer c (Player s pos ibs d) = Player s pos (updateInputBuffer c ibs) d
+updateInputForPlayer c (Player s pos ibs d sp) = Player s pos (updateInputBuffer c ibs) d sp
   where
     -- updates the input buffer list of a player, making sure one key is depressed at a time
     updateInputBuffer :: Char -> [InputBuffer] -> [InputBuffer]

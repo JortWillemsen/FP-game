@@ -15,14 +15,19 @@ data FloorType = Path | Trapdoor deriving (Show, Eq, Ord)
 
 instance Collidable Tile where
   collisions (Floor Trapdoor _ _ _) = ["player"]
+  collisions (Floor _ _ (Just _) _) = ["player"]
   collisions (Floor {}) = []
   collisions (Wall {}) = ["ghost", "player"]
   name (Floor Trapdoor _ _ _) = "trapdoor"
 
+  name (Floor _ _ (Just _) _) = "collectible"
   name (Floor {}) = "floor"
   name (Wall {}) = "wall"
+
   hitBox (Wall p@(x, y) _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
   hitBox (Floor Trapdoor p@(x, y) _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
+  hitBox (Floor _ p@(x, y) (Just Energizer) _ ) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
+  hitBox (Floor _ (x, y) (Just Dot) _ ) = [(x + (tileSize / 2), y + (tileSize / 2)), (x + (tileSize / 2) + 1, y + (tileSize / 2)), (x + (tileSize / 2) + 1, y + (tileSize / 2) + 1), (x + (tileSize / 2), y + (tileSize / 2) + 1)]
   hitBox (Floor {}) = []
 
 -- Allows for easy access
@@ -97,6 +102,16 @@ getCollectible :: Maze -> Position -> Maybe Collectable
 getCollectible m p = case findTileInMaze m p of
   (Floor _ _ c _) -> c
   _ -> Nothing
+
+getEnergizers :: Maze -> [Tile]
+getEnergizers = filter isEnergizer
+
+isEnergizer :: Tile -> Bool
+isEnergizer t = case t of
+  (Wall {}) -> False
+  (Floor _ _ c _) -> case c of
+    Just Energizer -> True
+    _ -> False 
 
 removeCollectible :: Maze -> Position -> Maze
 removeCollectible m p = case findTileInMaze m p of

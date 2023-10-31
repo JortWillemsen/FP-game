@@ -1,7 +1,7 @@
 module Model.Move where
 
 import Model.Constants
-import Model.Collidable (Collidable, collides)
+import Model.Collidable (Collidable, collides, collidesWith)
 import Debug.Trace (trace)
 import Data.List (sort, sortBy)
 import Data.Function (on)
@@ -26,6 +26,7 @@ inverse D = U
 
 class Moveable a where
   move :: a -> Direction -> Speed -> a
+  moveTo :: a -> Position -> a
   pos :: a -> Position
   buffer :: a -> [InputBuffer]
   dir :: a -> Direction
@@ -49,7 +50,7 @@ manhattan (x, y) (x', y') = sqrt (a + b) where
 
 -- Takes a movable with a direction and a list of all possible collisions to check if the move is valid
 tryMove :: (Moveable a, Collidable a, Collidable b) => a -> Direction -> [b] -> Maybe a
-tryMove m d cs = if any (\x -> move m d speed `collides` x) cs 
+tryMove m d cs = if any (\x -> collidesWith (move m d speed) x ["wall"]) cs 
   then Nothing
   else Just (move m d speed)
     

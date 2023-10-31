@@ -16,8 +16,11 @@ collides x y = hitBox x `intersects` hitBox y && x `collidable` y
 collidable :: (Collidable a, Collidable b) => a -> b -> Bool
 collidable x y = (name x `elem` collisions y) || (name y `elem` collisions x)
 
+collidesWith :: (Collidable a, Collidable b) => a -> b -> [String] -> Bool
+collidesWith x y tags = x `collides` y && name y `elem` tags
+
 intersects :: HitBox -> HitBox -> Bool
-intersects hitbox s = any (`inSquare` s) hitbox where
+intersects hitbox s = any (`inSquare` s) hitbox || any (`inSquare` hitbox) s where
   inSquare :: Position -> [Position] -> Bool
   inSquare _ [] = False
   inSquare (x, y) [(bLX, bLY), _, (tRX, tRY), _] = x > bLX && y > bLY && x <= tRX && y <= tRY
