@@ -103,7 +103,7 @@ loadAnimations =
     let eyes = Animation 2 eyesFrames
 
 
-    return $ AllAnimations eat blinky pinky inky clyde eyes scattered energizer
+    return $ AllAnimations eat blinky pinky inky clyde scattered eyes energizer
 
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures

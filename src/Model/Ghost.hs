@@ -15,7 +15,8 @@ type Time = Float
 data GhostType = Blinky | Pinky | Inky | Clyde deriving Eq
 data Wellbeing  = Scattered Time 
                 | Normal Time 
-                | Frightened Time 
+                | Frightened Time
+                | Respawning 
                 | Spawning Time deriving Eq
 
 getTime :: Wellbeing -> Time
@@ -23,6 +24,7 @@ getTime (Normal t) = t
 getTime (Scattered t) = t
 getTime (Frightened t) = t
 getTime (Spawning t) = t
+getTime Respawning = 0
 
 data Ghost = Ghost {
   ghostType :: GhostType,
@@ -38,6 +40,7 @@ instance Moveable Ghost where
   pos (Ghost _ p _ _ _ _ _) = p
   buffer (Ghost _ _ _ _ _ _ b) = b
   dir (Ghost _ _ _ d _ _ _) = d
+  moveTo (Ghost t p sp d scp w b) new = Ghost t new sp d scp w b
   move :: Ghost -> Direction -> Speed -> Ghost
   move (Ghost t (x, y) sp _ scp w b) d s
     | d == U = Ghost t (x - s, y) sp d scp w b
@@ -54,9 +57,17 @@ instance Collidable Ghost where
 sPos :: Ghost -> Position
 sPos (Ghost _ _ _ _ s _ _) = s
 
+spawn :: Ghost -> Position
+spawn (Ghost _ _ sp _ _ _ _) = sp
+
+newWellbeing :: Wellbeing -> Ghost -> Ghost
+newWellbeing newW (Ghost t p sp d scp w b) = Ghost t p sp d scp newW b
+
 translateGhost :: (Collidable a, RandomGen g) => Ghost -> g -> Position -> [a] -> Ghost
 translateGhost g gen p cs = case wellbeing g of
-  (Frightened _) -> fst $ fst $ randomElementFromList (possibleMoves movesPerDir) gen
+  (Frightened _) -> if (length (possibleMoves movesPerDir) < 1)
+    then move g (inverse $ dir g) 0
+    else fst $ fst $ randomElementFromList (possibleMoves movesPerDir) gen
   otherwise -> if length sortedMoves < 1
     then move g (inverse $ dir g) 0
     else fst $ head sortedMoves

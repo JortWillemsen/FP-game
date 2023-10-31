@@ -1,4 +1,2 @@
-Jort 1000
-Annemae 100
-Annemae 100
-
+Annemae 1000
+Jort 500

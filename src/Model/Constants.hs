@@ -12,5 +12,8 @@ scatterTime = 10
 normalTime :: Float
 normalTime = 15
 
+spawnTime :: Float
+spawnTime = 2
+
 frightenedTime :: Float
 frightenedTime = 10

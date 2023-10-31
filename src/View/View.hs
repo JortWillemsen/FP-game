@@ -3,7 +3,7 @@
 module View.View where
 
 import Data.Maybe (mapMaybe)
-import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Scattered, Normal, Frightened, Spawning))
+import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Scattered, Normal, Frightened, Spawning, Respawning))
 import Graphics.Gloss
 import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize, FloorType (Trapdoor))
 import Model.Model
@@ -71,7 +71,7 @@ showHighScores s ws = translate x y (Color white $ Scale 0.2 0.2 $ Text ("HIGHSC
 
 showPlayer :: GameState -> AllAnimations -> Picture
 showPlayer gstate animations = case player gstate of
-  (Player PuckMan (x, y) _ _) -> translate x y $ rotation $ animateTexture anim (time gstate) where
+  (Player PuckMan (x, y) _ _ _) -> translate x y $ rotation $ animateTexture anim (time gstate) where
     anim = eatAnim animations
     rotation = case direction $ player gstate of
       U -> rotate (-90)
@@ -85,7 +85,8 @@ showGhosts gstate animations = Pictures [showGhost $ blinky gstate, showGhost $ 
   showGhost (Ghost t (x, y) _ _ _ w _) = translate x y $ animateTexture anim (time gstate) 
     where 
       anim = case w of
-        Spawning _ -> frightenedAnim animations
+        Frightened _ -> frightenedAnim animations
+        Respawning -> eyesAnim animations
         otherwise -> case t of
           Blinky -> blinkyAnim animations
           Pinky -> pinkyAnim animations
