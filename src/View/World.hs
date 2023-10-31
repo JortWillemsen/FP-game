@@ -35,6 +35,7 @@ data AllAnimations = AllAnimations
     inkyAnim :: Animation,
     clydeAnim :: Animation,
     frightenedAnim :: Animation,
+    eyesAnim :: Animation,
     energizerAnim :: Animation
   }
 
@@ -75,6 +76,7 @@ loadAnimations =
     inkyFrames <- mapM loadBMP ["Assets/animations/ghost/Inky1.bmp", "Assets/animations/ghost/Inky2.bmp"]
     clydeFrames <- mapM loadBMP ["Assets/animations/ghost/Clyde1.bmp", "Assets/animations/ghost/Clyde2.bmp"]
     scatteredFrames <- mapM loadBMP ["Assets/animations/ghost/Scattered1.bmp", "Assets/animations/ghost/Scattered2.bmp"]
+    eyesFrames <- mapM loadBMP ["Assets/animations/ghost/eyes.bmp"]
     energizerFrames <- mapM loadBMP ["Assets/collectibles/energizer1.bmp", "Assets/collectibles/energizer2.bmp"]
     let eat = Animation 0.5 eatFrames
     let blinky = Animation 0.5 blinkyFrames
@@ -83,9 +85,10 @@ loadAnimations =
     let clyde = Animation 0.5 clydeFrames
     let scattered = Animation 0.5 scatteredFrames
     let energizer = Animation 0.3 energizerFrames
+    let eyes = Animation 2 eyesFrames
 
 
-    return $ AllAnimations eat blinky pinky inky clyde scattered energizer
+    return $ AllAnimations eat blinky pinky inky clyde eyes scattered energizer
 
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures
