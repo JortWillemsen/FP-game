@@ -21,10 +21,10 @@ scalingFactor :: Float
 scalingFactor = 1.5
 
 centerOfMaze :: (Float, Float) -> (Float, Float)
-centerOfMaze (x, y) = (abs x / 2, abs y / 2 - 25)
+centerOfMaze (x, y) = (abs x / scalingFactor, abs y / scalingFactor)
 
 calculateScreenSize :: WorldState -> (Int, Int)
-calculateScreenSize ws = let (x, y) = getMazeSize (maze $ gameState ws) in (round (x * scalingFactor), round (y * scalingFactor + 40))
+calculateScreenSize ws = let (x, y) = getMazeSize (maze $ gameState ws) in (round (x * scalingFactor), round (y * scalingFactor))
 
 offset :: (Int, Int) -> (Float, Float)
 offset (x, y) = (-(fromIntegral x / 2), -(fromIntegral y / 2))
@@ -32,6 +32,7 @@ offset (x, y) = (-(fromIntegral x / 2), -(fromIntegral y / 2))
 view :: WorldState -> IO Picture
 view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y $ scale scalingFactor scalingFactor $ showAll s ws where
   s = offset $ calculateScreenSize ws
+
 showAll :: (Float, Float) -> WorldState -> Picture
 showAll s ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
   | menuToggle (screenState state) == Depressed = showMenu s allTextures
@@ -44,7 +45,9 @@ showAll s ws@WorldState {gameState = state, textures = allTextures, animation = 
                                   showScore s state]
 
 showLives :: (Float, Float) -> GameState -> Picture -- Hearts
-showLives s@(x, y) state = translate (abs x - 20) (abs $ y + 10) (Color red $ Scale 0.2 0.2 $ Text (show $ lives state))
+showLives s state = translate (abs x + x - 110) (abs y + y) (Color red $ Scale 0.2 0.2 $ Text ("Lives: " ++ (show $ lives state)))
+  where 
+    (x, y) = centerOfMaze s
 
 showPause :: (Float, Float) -> AllTextures -> Picture
 showPause s text = translate x y (paused $ textTextures text)
@@ -52,7 +55,9 @@ showPause s text = translate x y (paused $ textTextures text)
     (x, y) = centerOfMaze s
 
 showScore :: (Float, Float) -> GameState -> Picture
-showScore (x, y) state = translate (abs x + x + 10) (abs $ y + 10) (Color white $ Scale 0.2 0.2 $ Text (show $ score state))
+showScore s state = translate (abs x - x + 10) (abs y + y) (Color white $ Scale 0.2 0.2 $ Text ("Score: " ++ (show $ score state)))
+  where 
+    (x, y) = centerOfMaze s
 
 showMenu :: (Float, Float) -> AllTextures -> Picture
 showMenu s text = translate x y (menu $ textTextures text)
@@ -60,14 +65,10 @@ showMenu s text = translate x y (menu $ textTextures text)
     (x, y) = centerOfMaze s
 
 showHighScores :: (Float, Float) -> WorldState -> Picture
-showHighScores s ws = translate x y (Color white $ Scale 0.2 0.2 $ Text ("HIGHSCORES" ++ "\n" ++ text))
-  where 
-    text = text' (highScores ws)
-      where 
-        text' :: [String] -> [Char]
-        text' [] = []
-        text' (line:lines) = line ++ "\n" ++ text' lines
-    (x, y) = centerOfMaze s 
+showHighScores s ws = translate x y (Color white $ Scale 0.2 0.2 text)
+  where
+    text = Pictures $ zipWith (\line y -> translate 0 y (Text line)) (highScores ws) [0, - 120..]
+    (x, y) = centerOfMaze s
 
 showPlayer :: GameState -> AllAnimations -> Picture
 showPlayer gstate animations = case player gstate of
