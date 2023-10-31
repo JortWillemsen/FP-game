@@ -3,15 +3,16 @@ module View.World where
 import Graphics.Gloss
 import Model.Model
 import View.Animation
-import View.File ( loadLevel, loadCustomLevel, loadHighScores ) 
-
+import View.File( loadLevel, loadCustomLevel, loadHighScores ) 
+import View.Random (generateSeed)
+import System.Random (StdGen)
 
 data WorldState = WorldState
   { gameState :: GameState,
     highScores :: HighScores,
     textures :: AllTextures,
     animation :: AllAnimations
-  } 
+  }
 
 createWorldState :: Level -> IO WorldState
 createWorldState l =
@@ -19,7 +20,8 @@ createWorldState l =
     textures <- loadTextures
     level <- loadLevel l 
     highscores <- loadHighScores
-    WorldState (nextState level l) highscores textures <$> loadAnimations
+    seed <- generateSeed
+    WorldState (nextState level l seed) highscores textures <$> loadAnimations
 
 createCustomWorldState :: Level -> IO WorldState
 createCustomWorldState l =
@@ -27,7 +29,8 @@ createCustomWorldState l =
     textures <- loadTextures
     level <- loadCustomLevel l
     highscores <- loadHighScores 
-    WorldState (nextState level l) highscores textures <$> loadAnimations
+    seed <- generateSeed
+    WorldState (nextState level l seed) highscores textures <$> loadAnimations
 
 
 type HighScores = [String]
@@ -40,7 +43,14 @@ data AllTextures = AllTextures
   }
 
 data AllAnimations = AllAnimations
-  { eat :: Animation
+  { eatAnim :: Animation,
+    blinkyAnim :: Animation,
+    pinkyAnim :: Animation,
+    inkyAnim :: Animation,
+    clydeAnim :: Animation,
+    frightenedAnim :: Animation,
+    eyesAnim :: Animation,
+    energizerAnim :: Animation
   }
 
 data TextTextures = TextTextures {
@@ -63,7 +73,8 @@ data WallTextures = WallTextures
     stumpW :: Texture,
     pipeH :: Texture,
     pipeV :: Texture,
-    contained :: Texture
+    contained :: Texture,
+    trapdoor :: Texture
   }
 
 data CollectibleTextures = CollectibleTextures
@@ -75,10 +86,25 @@ loadAnimations :: IO AllAnimations
 loadAnimations =
   do
     eatFrames <- mapM loadBMP ["Assets/animations/eat/frame1.bmp", "Assets/animations/eat/frame2.bmp", "Assets/animations/eat/frame3.bmp"]
-
+    blinkyFrames <- mapM loadBMP ["Assets/animations/ghost/Blinky1.bmp", "Assets/animations/ghost/Blinky2.bmp"]
+    pinkyFrames <- mapM loadBMP ["Assets/animations/ghost/Pinky1.bmp", "Assets/animations/ghost/Pinky2.bmp"]
+    inkyFrames <- mapM loadBMP ["Assets/animations/ghost/Inky1.bmp", "Assets/animations/ghost/Inky2.bmp"]
+    clydeFrames <- mapM loadBMP ["Assets/animations/ghost/Clyde1.bmp", "Assets/animations/ghost/Clyde2.bmp"]
+    scatteredFrames <- mapM loadBMP ["Assets/animations/ghost/Scattered1.bmp", "Assets/animations/ghost/Scattered2.bmp"]
+    eyesFrames <- mapM loadBMP ["Assets/animations/ghost/eyes.bmp"]
+    energizerFrames <- mapM loadBMP ["Assets/collectibles/energizer1.bmp", "Assets/collectibles/energizer2.bmp"]
     let eat = Animation 0.5 eatFrames
+    let blinky = Animation 0.5 blinkyFrames
+    let pinky = Animation 0.5 pinkyFrames
+    let inky = Animation 0.5 inkyFrames
+    let clyde = Animation 0.5 clydeFrames
+    let scattered = Animation 0.5 scatteredFrames
+    let energizer = Animation 0.3 energizerFrames
+    let eyes = Animation 2 eyesFrames
 
-    return $ AllAnimations eat
+
+    return $ AllAnimations eat blinky pinky inky clyde eyes scattered energizer
+
 -- Loading all the bitmaps using monads (<$> and <*> are from applicative)
 loadTextures :: IO AllTextures
 loadTextures =
@@ -91,7 +117,7 @@ loadTextures =
     collectibleTextures <-
       CollectibleTextures
         <$> loadBMP "Assets/collectibles/dot.bmp"
-        <*> loadBMP "Assets/collectibles/energizer.bmp"
+        <*> loadBMP "Assets/collectibles/energizer1.bmp"
     wallTextures <-
       WallTextures
         <$> loadBMP "Assets/walls/wall_corner_tl.bmp"
@@ -109,6 +135,7 @@ loadTextures =
         <*> loadBMP "Assets/walls/wall_pipe_h.bmp"
         <*> loadBMP "Assets/walls/wall_pipe_v.bmp"
         <*> loadBMP "Assets/walls/wall_contained.bmp"
+        <*> loadBMP "Assets/walls/trapdoor.bmp"
 
     -- Creating the all textures structure with all the textures loaded.
     return $ AllTextures wallTextures textTextures collectibleTextures playerTexture
