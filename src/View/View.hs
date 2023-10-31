@@ -3,7 +3,7 @@
 module View.View where
 
 import Data.Maybe (mapMaybe)
-import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Scattered, Normal, Frightened), Time)
+import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Scattered, Normal, Frightened, Spawning), Time)
 import Graphics.Gloss
 import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize, FloorType (Trapdoor))
 import Model.Model
@@ -68,10 +68,10 @@ showPlayer gstate animations = case player gstate of
 showGhosts :: GameState -> AllAnimations -> Picture
 showGhosts gstate animations = Pictures [showGhost $ blinky gstate, showGhost $ pinky gstate, showGhost $ inky gstate, showGhost $ clyde gstate] where
   showGhost :: Ghost -> Picture
-  showGhost (Ghost t (x, y) _ _ w _) = translate x y $ animateTexture anim (time gstate) 
+  showGhost (Ghost t (x, y) _ _ _ w _) = translate x y $ animateTexture anim (time gstate) 
     where 
       anim = case w of
-        Frightened _ -> frightenedAnim animations
+        Spawning _ -> frightenedAnim animations
         otherwise -> case t of
           Blinky -> blinkyAnim animations
           Pinky -> pinkyAnim animations
