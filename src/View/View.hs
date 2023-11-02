@@ -65,9 +65,10 @@ showMenu s text = translate x y (menu $ textTextures text)
     (x, y) = centerOfMaze s
 
 showHighScores :: (Float, Float) -> WorldState -> Picture
-showHighScores s ws = translate x y (Color white $ Scale 0.2 0.2 text)
+showHighScores s ws = Pictures [translate (x / 2 + 20) (y + y) (Color red $ Scale 0.2 0.2 $ Text "HIGHSCORES"), 
+                                translate (x / 2) (y + y - 40) (Color white $ Scale 0.2 0.2 text)]
   where
-    text = Pictures $ zipWith (\line y -> translate 0 y (Text line)) (highScores ws) [0, - 120..]
+    text = Pictures $ zipWith (\line y -> translate (x / 2) y (Text line)) (highScores ws) [0, - 120..]
     (x, y) = centerOfMaze s
 
 showPlayer :: GameState -> AllAnimations -> Picture
