@@ -3,7 +3,7 @@ module Controller.Controller where
 import Graphics.Gloss ()
 import Graphics.Gloss.Interface.IO.Game ()
 import Model.Constants (frightenedTime, normalTime, scatterTime, spawnTime, tileSize)
-import Model.Ghost (Ghost (Ghost, ghostType, spawnPoint, wellbeing), GhostType (Blinky, Clyde, Inky, Pinky), Wellbeing (Frightened, Normal, Respawning, Scattered, Spawning), getTime, newWellbeing, sPos, spawn, translateGhost, makeFrightened)
+import Model.Ghost (Ghost (Ghost, ghostType, spawnPoint, wellbeing, scatter), GhostType (Blinky, Clyde, Inky, Pinky), Wellbeing (Frightened, Normal, Respawning, Scattered, Spawning), getTime, newWellbeing, spawn, translateGhost, makeFrightened)
 import Model.Maze (Maze, Tile (Floor, Wall), getCollectible, getEnergizers, Collectable (Dot, Energizer), floors, collectable)
 import Model.Model
     ( deathState,
@@ -120,7 +120,7 @@ updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Gho
       -- If we are respawning, we need to get to the spawn as fast as possible
       Respawning -> spawn g
       -- If we are scattered, we need to find our randomly assigned scatter position
-      (Scattered _) -> sPos g
+      (Scattered _) -> scatter g
       -- Otherwise we need to calculate our target to chase the player
       otherwise -> case ghostType g of
         Blinky -> blinkyTarget
@@ -144,7 +144,7 @@ updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Gho
     -- Then he gets scared and runs off to his scatter position
     clydeTarget =
       if manhattan (pos $ clyde state) (pos $ player state) < 5
-        then sPos (clyde state)
+        then scatter (clyde state)
         else position $ player state
 
 -- Reevaluates the wellbeing of the ghost based on time passed
