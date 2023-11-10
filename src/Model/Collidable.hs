@@ -11,10 +11,18 @@ class (Eq a) => Collidable a where
   name :: a -> String
 
 collides :: (Collidable a, Collidable b) => a -> b -> Bool
-collides x y = hitBox x `intersects` hitBox y && x `collidable` y
+collides x y = hitBox x `intersects` hitBox y && x `collidable` y where
+  collidable :: (Collidable a, Collidable b) => a -> b -> Bool
+  collidable x y = (name x `elem` collisions y) || (name y `elem` collisions x)
 
-collidable :: (Collidable a, Collidable b) => a -> b -> Bool
-collidable x y = (name x `elem` collisions y) || (name y `elem` collisions x)
+
+collidesReturn :: (Collidable a, Collidable b) => a -> [b] -> Maybe b
+collidesReturn x = foldr f Nothing
+  where
+        f c r =
+          if x `collides` c
+            then Just c
+            else r
 
 collidesWith :: (Collidable a, Collidable b) => a -> b -> [String] -> Bool
 collidesWith x y tags = x `collides` y && name y `elem` tags

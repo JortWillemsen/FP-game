@@ -53,4 +53,3 @@ tryMove :: (Moveable a, Collidable a, Collidable b) => a -> Direction -> [b] -> 
 tryMove m d cs = if any (\x -> collidesWith (move m d speed) x ["wall"]) cs 
   then Nothing
   else Just (move m d speed)
-    

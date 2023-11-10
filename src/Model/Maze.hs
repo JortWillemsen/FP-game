@@ -35,6 +35,10 @@ pos :: Tile -> Position
 pos (Wall p _) = p
 pos (Floor  _ p _ _) = p
 
+collectable :: Tile -> Maybe Collectable
+collectable (Wall {}) = Nothing
+collectable (Floor _ _ x _ ) = x
+
 type Maze = [Tile]
 
 -- XXXXX

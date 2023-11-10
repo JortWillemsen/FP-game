@@ -63,6 +63,12 @@ spawn (Ghost _ _ sp _ _ _ _) = sp
 newWellbeing :: Wellbeing -> Ghost -> Ghost
 newWellbeing newW (Ghost t p sp d scp w b) = Ghost t p sp d scp newW b
 
+makeFrightened :: Ghost -> Ghost
+makeFrightened g = case wellbeing g of
+  Respawning -> g
+  (Spawning _) -> g
+  _ -> newWellbeing (Frightened frightenedTime) g
+
 translateGhost :: (Collidable a, RandomGen g) => Ghost -> g -> Position -> [a] -> Ghost
 translateGhost g gen p cs = case wellbeing g of
   (Frightened _) -> if (length (possibleMoves movesPerDir) < 1)

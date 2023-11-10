@@ -4,12 +4,18 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Model.Collidable (collides)
 import Model.Constants (frightenedTime, normalTime, scatterTime, spawnTime, tileSize)
-import Model.Ghost (Ghost (Ghost, ghostType, spawnPoint, wellbeing), GhostType (Blinky, Clyde, Inky, Pinky), Wellbeing (Frightened, Normal, Respawning, Scattered, Spawning), getTime, newWellbeing, sPos, spawn, translateGhost)
-import Model.Maze (Maze, Tile (Floor), getCollectible, getEnergizers, Collectable (Dot, Energizer), floors)
+import Model.Ghost (Ghost (Ghost, ghostType, spawnPoint, wellbeing), GhostType (Blinky, Clyde, Inky, Pinky), Wellbeing (Frightened, Normal, Respawning, Scattered, Spawning), getTime, newWellbeing, sPos, spawn, translateGhost, makeFrightened)
+import Model.Maze (Maze, Tile (Floor, Wall), getCollectible, getEnergizers, Collectable (Dot, Energizer), floors, collectable)
 import Model.Model
+    ( deathState,
+      GameState(lives, screenState, level, ticks, time, pinky, inky,
+                score, blinky, clyde, player, generator, maze),
+      ScreenState(pauseToggle),
+      Time )
 import Model.Move (Move, Moveable (dir, move, pos), Position, Toggled (Depressed, Released), down, left, manhattan, right, up)
 import Model.Player
 import Model.Score (updateHighScores, updateScore)
+import Model.Collidable
 import System.Random
 import View.File (saveHighScores)
 import View.World
@@ -17,75 +23,85 @@ import View.World
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
+  -- Check if we need to change to another state
   | pauseToggle (screenState state) == Depressed = return ws
   | gameOver state = handleGameOver (gameState ws)
   | nextLevel (maze state) = createWorldState (level state + 1)
+  -- Otherwise keep running current state
   | otherwise =
       return $
         ws
           { gameState =
               handleEffects
                 state
-                  { player = translatePlayer (player state) (maze state),
+                  { 
+                    -- Translate the player
+                    player = translatePlayer (player state) (maze state),
+                    
+                    -- Update ghosts behaviour, wellbeing and position 
                     blinky = updateGhost (blinky state) interval state,
                     pinky = updateGhost (pinky state) interval state,
                     inky = updateGhost (inky state) interval state,
                     clyde = updateGhost (clyde state) interval state,
+                    
+                    -- Iterate 1 game tick
                     ticks = ticks state + 1,
                     time = time state + interval,
+
+                    -- Generate a new random value every tick
                     generator = snd $ (random :: StdGen -> (Int, StdGen)) (generator state)
                   }
           }
 
+-- | After changing the state we need to check for some effects like:
+--   Collision with entities - Has the player collided with a ghost or a collectible
 handleEffects :: GameState -> GameState
-handleEffects gs
-  | collidedGhost = case wb of
-      (Frightened _) -> case ghost of
-        Nothing -> gs
-        (Just x) -> case ghostType x of
-          Blinky -> gs {blinky = respawnGhost x}
-          Pinky -> gs {pinky = respawnGhost x}
-          Inky -> gs {inky = respawnGhost x}
-          Clyde -> gs {clyde = respawnGhost x}
-      Respawning -> gs
-      _ -> deathState gs {lives = (lives gs) - 1}
-  | collidedCollectible = case collectible of
-      Nothing -> gs
-      (Just x@(Floor _ p (Just Energizer) _)) ->
-        gs
-          { 
-            maze = snd $ updateScore x (maze gs) (score gs),
-            score = fst $ updateScore x (maze gs) (score gs),
-            blinky = makeFrightened (blinky gs),
-            pinky = makeFrightened (pinky gs),
-            inky = makeFrightened (inky gs),
-            clyde = makeFrightened (clyde gs)
-          }
-      (Just x@(Floor _ p (Just Dot) _)) ->  gs
-          { 
-            maze = snd $ updateScore x (maze gs) (score gs),
-            score = fst $ updateScore x (maze gs) (score gs)
-          }
-  | otherwise = gs
-  where
-    makeFrightened :: Ghost -> Ghost
-    makeFrightened g = case wellbeing g of
-      (Respawning) -> g
-      (Spawning _) -> g
-      _ -> newWellbeing (Frightened frightenedTime) g
-    respawnGhost (Ghost t pos sp d sct _ b) = Ghost t pos sp d sct (Respawning) b
-    (collidedCollectible, collectible) = foldr f (False, Nothing) (floors (maze gs))
-      where
-        f x r =
-          if player gs `collides` x
-            then (True, Just x)
-            else r
-    (collidedGhost, wb, ghost) = foldr f (False, Normal 0, Nothing) [blinky gs, pinky gs, inky gs, clyde gs]
-      where
-        f x r =
-          if player gs `collides` x
-            then (True, wellbeing x, Just x)
-            else r
+handleEffects gs = 
+  let ghost = collidesReturn (player gs) [blinky gs, pinky gs, inky gs, clyde gs]
+      collectible = collidesReturn (player gs) (floors $ maze gs) in
+        -- If ghost is just, we have collided with it 
+        case ghost of
+          Nothing -> 
+            -- If collectible is just, we have collided with it
+            case collectible of
+              Nothing -> gs
+              Just x -> handleCollectibleCollision gs x
+          Just x -> handleGhostCollision gs x
+
+-- | Updates the game state based on collision with a ghost
+handleGhostCollision :: GameState -> Ghost -> GameState
+handleGhostCollision gs g = case wellbeing g of
+  -- If ghost is respawning we don't want any effect
+  Respawning -> gs
+  -- If ghost is frightened we just pick the right ghost and make it: Respawning
+  (Frightened _) -> case ghostType g of
+    Blinky -> gs {blinky = newWellbeing Respawning g}
+    Pinky -> gs {pinky = newWellbeing Respawning g}
+    Inky -> gs {inky = newWellbeing Respawning g}
+    Clyde -> gs {clyde = newWellbeing Respawning g}
+  -- In any other case, the ghost eats the player
+  _ -> deathState gs {lives = lives gs - 1}
+
+-- | Updates the game state based on collision with a collectible
+handleCollectibleCollision :: GameState -> Tile -> GameState
+handleCollectibleCollision gs t = case t of
+  (Wall {}) -> gs
+  -- If collectible is dot, we need to update the score and remove it from the maze
+  (Floor _ _ (Just Dot) _) -> gs
+    { 
+      maze = snd $ updateScore t (maze gs) (score gs),
+      score = fst $ updateScore t (maze gs) (score gs)
+    }
+  -- If collectible is energizer, we need to make every ghost frightened
+  (Floor _ _ (Just Energizer) _) -> gs 
+    { 
+      maze = snd $ updateScore t (maze gs) (score gs),
+      score = fst $ updateScore t (maze gs) (score gs),
+      blinky = makeFrightened (blinky gs),
+      pinky = makeFrightened (pinky gs),
+      inky = makeFrightened (inky gs),
+      clyde = makeFrightened (clyde gs)
+    }
 
 handleGameOver :: GameState -> IO WorldState
 handleGameOver state = do
@@ -95,7 +111,7 @@ handleGameOver state = do
 updateGhost :: Ghost -> Time -> GameState -> Ghost
 updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Ghost t p sp d scp (updateWellbeing ghost interval) ib) (generator state) (ghostTarget ghost) (maze state)
   where
-    ghostTarget :: Ghost -> Position
+    ghostTarget :: Ghost -> Model.Move.Position
     ghostTarget g = case wellbeing g of
       Respawning -> spawn g
       (Scattered _) -> sPos g
