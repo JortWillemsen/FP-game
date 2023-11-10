@@ -1,7 +1,12 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use unless" #-}
 module View.File where
 
 import Model.Score ( Score, updateHighScores, HighScore )
-import Model.Model
+import Model.Model ( Level )
+import Control.Monad (when)
+import Model.Player (PlayerType (PuckMan))
+
 
 loadLevel :: Level -> IO [String]
 loadLevel i = do
@@ -26,20 +31,18 @@ loadHighScores = do
     scores <- readFile "score/highscores.txt"
     return $ lines scores
 
-saveHighScores :: (String, Int) -> IO ()
-saveHighScores score = do
-    scores <- loadHighScores
-    if length scores > 1 -- Ok als dit weg is doet ie raar?
-        then writeFile "score/highscores.txt" (buildScoreString $ take 10 $ updateHighScores (buildScoreList scores) score)
-        else writeFile "score/highscores.txt" (buildScoreString [score])
+saveHighScores :: (PlayerType, Score) -> [String] -> IO ()
+saveHighScores score scores = do
+    length scores `seq` writeFile "score/highscores.txt" (buildScoreString $ take 10 $ updateHighScores (buildScoreList scores) score)
 
     where
         buildScoreList :: [String] -> [HighScore]
         buildScoreList [] = []
-        buildScoreList (x:xs) = (concat $ take 1 ws, read . concat $ drop 1 ws) : buildScoreList xs
+        buildScoreList (x:xs) = (getPlayerType $ concat $ take 1 ws, read . concat $ drop 1 ws) : buildScoreList xs
             where
                 ws = words x
+                getPlayerType "Puck-Man" = PuckMan
 
         buildScoreString :: [HighScore] -> String
         buildScoreString [] = []
-        buildScoreString ((n, s):xs) = n ++ " " ++ show s ++ "\n" ++ buildScoreString xs
+        buildScoreString ((pt, s):xs) = show pt ++ " " ++ show s ++ "\n" ++ buildScoreString xs

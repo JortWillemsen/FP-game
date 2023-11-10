@@ -1,12 +1,13 @@
 module View.Input where
 
-import Graphics.Gloss.Interface.IO.Game (Event (EventKey), Key (Char), KeyState (Down, Up))
+import Graphics.Gloss.Interface.IO.Game (Event (EventKey), Key (Char), KeyState (Down, Up), Modifiers (shift, ctrl))
 import Model.Model
 import View.World
 import Model.Player (Player(Player))
 import Model.Move ( InputBuffer, Toggled(Released, Depressed) )
 import GHC.Real (fromIntegral)
 import View.World (createCustomWorldState)
+import Debug.Trace
 
 toggle :: Toggled -> Toggled
 toggle t | t == Released = Depressed
@@ -17,7 +18,7 @@ input e ws@WorldState {gameState = state} = handleKey e state ws
 
 -- Handle pause key
 handleKey :: Event -> GameState -> WorldState -> IO WorldState
-handleKey (EventKey (Char c) t _ _) state ws
+handleKey (EventKey (Char c) t m _) state ws
   | c == 'p' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = toggle (pauseToggle $ screenState state)
                                                         , menuToggle = Released
                                                         , highscoreToggle = Released}}}
@@ -27,7 +28,12 @@ handleKey (EventKey (Char c) t _ _) state ws
   | c == 'h' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = Depressed
                                                                                     , menuToggle = Released
                                                                                     , highscoreToggle = toggle (highscoreToggle $ screenState state)}}}
-  | c `elem` ['1', '2', '3', '4', '5'] = createCustomWorldState (read [c])
+  | c `elem` ['1', '2', '3', '4', '5'] = case ctrl m of 
+    Down -> if menuToggle (screenState state) == Depressed then createCustomWorldState ws (read [c]) 
+           else return ws {gameState = state }
+    Up -> if menuToggle (screenState state) == Depressed
+                                          then createWorldState (read [c]) 
+                                          else return ws {gameState = state }
   | c `elem` ['w', 'a', 's', 'd'] = return ws {gameState = state {player = updateInputForPlayer c (player state)}}
   | otherwise = return ws {gameState = state }
 handleKey _ state ws = return ws {gameState = state }

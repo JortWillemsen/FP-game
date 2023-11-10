@@ -1,11 +1,13 @@
 module Model.Score where 
 import Model.Maze
 import Model.Move (Position)
+import Model.Player
 
 type Score = Int
-type HighScore = (String, Int)
+type HighScore = (PlayerType, Score)
 
 updateHighScores :: [HighScore] -> HighScore -> [HighScore]
+updateHighScores [] x = [x]
 updateHighScores (hs1@(_, s1):xs) hs2@(_, s2) | s2 >= s1  = hs2 : hs1 : xs
                                               | otherwise = hs1 : updateHighScores xs hs2
 

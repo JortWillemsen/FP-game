@@ -25,7 +25,7 @@ step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
   -- Check if we need to change to another state
   | pauseToggle (screenState state) == Depressed = return ws
-  | gameOver state = handleGameOver (gameState ws)
+  | gameOver state = handleGameOver ws
   | nextLevel (maze state) = createWorldState (level state + 1)
   -- Otherwise keep running current state
   | otherwise =
@@ -103,9 +103,9 @@ handleCollectibleCollision gs t = case t of
       clyde = makeFrightened (clyde gs)
     }
 
-handleGameOver :: GameState -> IO WorldState
-handleGameOver state = do
-  -- saveHighScores (show $ playerType $ player state, score state)
+handleGameOver :: WorldState -> IO WorldState
+handleGameOver ws = do
+  saveHighScores (playerType $ player (gameState ws), score (gameState ws)) (highScores ws)
   createWorldState 1
 
 updateGhost :: Ghost -> Time -> GameState -> Ghost
