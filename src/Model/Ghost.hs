@@ -100,7 +100,7 @@ translateGhost g gen p cs = case wellbeing g of
     -- | Finds possible moves and assignes a value based on how likely we are to find the target
     possibleMoves :: [Maybe Ghost] -> [(Ghost, Float)]
     possibleMoves = foldr f [] where
-      f (Just x) r = (x, manhattan (pos x) p) : r
+      f (Just x) r = (x, pythagoras (pos x) p) : r
       f Nothing r = r
     
     -- | Tries to move in every direction we can

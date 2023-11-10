@@ -11,7 +11,7 @@ import Model.Model
                 score, blinky, clyde, player, generator, maze),
       ScreenState(pauseToggle),
       Time )
-import Model.Move (Move, Moveable (dir, move, pos), Position, Toggled (Depressed, Released), down, left, manhattan, right, up)
+import Model.Move (Move, Moveable (dir, move, pos), Position, Toggled (Depressed, Released), down, left, pythagoras, right, up)
 import Model.Player
     ( translatePlayer, Player(position, playerType) )
 import Model.Score (updateHighScores, updateScore)
@@ -137,13 +137,13 @@ updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Gho
     -- Inky's target is based based on the distance Blinky is from the player and doubles those vectors
     inkyTarget =
       let (x, y) = position $ move (player state) (dir $ player state) (tileSize * 2)
-          distance = manhattan (pos $ blinky state) (position $ player state)
+          distance = pythagoras (pos $ blinky state) (position $ player state)
        in (x + distance, y + distance)
     
     -- Clyde's target is the player until he is within 5 tiles of him. 
     -- Then he gets scared and runs off to his scatter position
     clydeTarget =
-      if manhattan (pos $ clyde state) (pos $ player state) < 5
+      if pythagoras (pos $ clyde state) (pos $ player state) < 5
         then scatter (clyde state)
         else position $ player state
 

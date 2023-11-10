@@ -14,6 +14,7 @@ import qualified Model.Player as Ghost
 
 type Time = Float
 
+-- | The desired interval between frames ()
 interval :: Time
 interval = 0.033
 
@@ -24,26 +25,29 @@ initiateLives :: Lives
 initiateLives = 3
 
 data GameState = GameState {
-                    maze       :: Maze
-                  , lives      :: Lives
-                  , score      :: Score
-                  , time       :: Time
-                  , ticks      :: Float
-                  , player     :: Player
-                  , blinky     :: Ghost
-                  , pinky      :: Ghost
-                  , inky       :: Ghost
-                  , clyde      :: Ghost
-                  , level      :: Level
+                    maze        :: Maze
+                  , lives       :: Lives
+                  , score       :: Score
+                  , time        :: Time
+                  , ticks       :: Float
+                  , player      :: Player
+                  , blinky      :: Ghost
+                  , pinky       :: Ghost
+                  , inky        :: Ghost
+                  , clyde       :: Ghost
+                  , level       :: Level
                   , screenState :: ScreenState
-                  , generator     :: StdGen
+                  , generator   :: StdGen
                 } 
 
-data ScreenState = ScreenState { highscoreToggle :: Toggled
-                               , menuToggle :: Toggled
-                               , pauseToggle :: Toggled } -- maybe Toggled type 
+data ScreenState = ScreenState 
+  { 
+    highscoreToggle :: Toggled, 
+    menuToggle :: Toggled, 
+    pauseToggle :: Toggled 
+  }  
 
--- Takes level for first time maze generation.
+-- | Creates a new game state before the ticks start
 nextState :: [String] -> Level -> Int -> GameState
 nextState level l r = 
   GameState 
@@ -67,6 +71,7 @@ nextState level l r =
       (scatterSpawns, _) = randomScatterSpawns gen' [1, 2, 3, 4] maze
       random = mkStdGen r
 
+-- | Resets all entities to their spawn position when died
 deathState :: GameState -> GameState
 deathState gs = gs {
   blinky = newWellbeing (Spawning 0) $ moveTo (blinky gs) (spawn $ blinky gs),

@@ -18,6 +18,7 @@ type Move = (Position, Position)
 
 data Direction = L | R | U | D deriving (Eq, Show)
 
+-- | Inverses the direction
 inverse :: Direction -> Direction
 inverse L = R
 inverse R = L
@@ -31,20 +32,25 @@ class Moveable a where
   buffer :: a -> [InputBuffer]
   dir :: a -> Direction
 
+-- | Moves the moveable up
 up :: (Moveable a) => a -> Speed -> Position
 up m s = let (x, y) = pos m in (x, y + s)
 
+-- | Moves the moveable down
 down :: (Moveable a) => a -> Speed -> Position
 down m s = let (x, y) = pos m in (x, y - s)
 
+-- | Moves the moveable left
 left :: (Moveable a) => a -> Speed -> Position
 left m s = let (x, y) = pos m in (x - s, y)
 
+-- | Moves the moveable right
 right :: (Moveable a) => a -> Speed -> Position
 right m s = let (x, y) = pos m in (x + s, y)
 
-manhattan :: Position -> Position -> Float
-manhattan (x, y) (x', y') = sqrt (a + b) where
+-- | Finds distance between two points using the Pythagorean theorem
+pythagoras :: Position -> Position -> Float
+pythagoras (x, y) (x', y') = sqrt (a + b) where
   a = abs (x' - x) **2
   b = abs (y' - y) **2
 
