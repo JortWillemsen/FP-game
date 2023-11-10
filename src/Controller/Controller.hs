@@ -1,8 +1,7 @@
 module Controller.Controller where
 
-import Graphics.Gloss
-import Graphics.Gloss.Interface.IO.Game
-import Model.Collidable (collides)
+import Graphics.Gloss ()
+import Graphics.Gloss.Interface.IO.Game ()
 import Model.Constants (frightenedTime, normalTime, scatterTime, spawnTime, tileSize)
 import Model.Ghost (Ghost (Ghost, ghostType, spawnPoint, wellbeing), GhostType (Blinky, Clyde, Inky, Pinky), Wellbeing (Frightened, Normal, Respawning, Scattered, Spawning), getTime, newWellbeing, sPos, spawn, translateGhost, makeFrightened)
 import Model.Maze (Maze, Tile (Floor, Wall), getCollectible, getEnergizers, Collectable (Dot, Energizer), floors, collectable)
@@ -14,19 +13,21 @@ import Model.Model
       Time )
 import Model.Move (Move, Moveable (dir, move, pos), Position, Toggled (Depressed, Released), down, left, manhattan, right, up)
 import Model.Player
+    ( translatePlayer, Player(position, playerType) )
 import Model.Score (updateHighScores, updateScore)
-import Model.Collidable
-import System.Random
+import Model.Collidable ( collidesReturn )
+import System.Random ( Random(random), StdGen )
 import View.File (saveHighScores)
 import View.World
+    ( createWorldState, WorldState(WorldState, highScores, gameState) )
 
 -- | Handle one iteration of the game
 step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
   -- Check if we need to change to another state
   | pauseToggle (screenState state) == Depressed = return ws
-  | gameOver state = handleGameOver ws
-  | nextLevel (maze state) = createWorldState (level state + 1)
+  | gameIsOver state = handleGameOver ws
+  | levelIsEmpty (maze state) = createWorldState (level state + 1)
   -- Otherwise keep running current state
   | otherwise =
       return $
@@ -103,54 +104,77 @@ handleCollectibleCollision gs t = case t of
       clyde = makeFrightened (clyde gs)
     }
 
+-- | Save the score in the high scores file and reset the level to level 1
 handleGameOver :: WorldState -> IO WorldState
 handleGameOver ws = do
   saveHighScores (playerType $ player (gameState ws), score (gameState ws)) (highScores ws)
   createWorldState 1
 
+-- | Calculates the target of the ghost and moves it towards it's target
 updateGhost :: Ghost -> Time -> GameState -> Ghost
 updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Ghost t p sp d scp (updateWellbeing ghost interval) ib) (generator state) (ghostTarget ghost) (maze state)
   where
+    -- | Calculating the target of the ghost
     ghostTarget :: Ghost -> Model.Move.Position
     ghostTarget g = case wellbeing g of
+      -- If we are respawning, we need to get to the spawn as fast as possible
       Respawning -> spawn g
+      -- If we are scattered, we need to find our randomly assigned scatter position
       (Scattered _) -> sPos g
+      -- Otherwise we need to calculate our target to chase the player
       otherwise -> case ghostType g of
         Blinky -> blinkyTarget
         Pinky -> pinkyTarget
         Inky -> inkyTarget
         Clyde -> clydeTarget
+    
+    -- Blinky's chase mode is just the player
     blinkyTarget = position $ player state
+
+    -- Pinky's target is always 2 tiles in front of the player
     pinkyTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
+    
+    -- Inky's target is based based on the distance Blinky is from the player and doubles those vectors
     inkyTarget =
       let (x, y) = position $ move (player state) (dir $ player state) (tileSize * 2)
           distance = manhattan (pos $ blinky state) (position $ player state)
        in (x + distance, y + distance)
+    
+    -- Clyde's target is the player until he is within 5 tiles of him. 
+    -- Then he gets scared and runs off to his scatter position
     clydeTarget =
       if manhattan (pos $ clyde state) (pos $ player state) < 5
         then sPos (clyde state)
         else position $ player state
 
+-- Reevaluates the wellbeing of the ghost based on time passed
 updateWellbeing :: Ghost -> Time -> Wellbeing
 updateWellbeing g i =
   if (getTime (wellbeing g) - i) <= 0
+    -- If the wellbeing counter is 0
+    -- We need to transition to another wellbeing
     then case wellbeing g of
       (Normal _) -> Scattered scatterTime
       (Scattered _) -> Normal normalTime
       (Frightened _) -> Scattered scatterTime
       (Spawning _) -> Normal normalTime
       Respawning ->
-        if (pos g /= spawn g)
-          then Respawning
-          else Spawning spawnTime
+        -- If we arrived at the spawn we need to transition to Spawning
+        if pos g == spawn g
+          then Spawning spawnTime
+          else Respawning
+    -- If the counter of the wellbeing is still above 0
+    -- We need to subtract the amount of time passed this tick
     else case wellbeing g of
       (Normal t) -> Normal (t - i)
       (Scattered t) -> Scattered (t - i)
       (Frightened t) -> Frightened (t - i)
       (Spawning t) -> Spawning (t - i)
 
-gameOver :: GameState -> Bool
-gameOver state = lives state == 0
+-- | Checks if the player has no lives
+gameIsOver :: GameState -> Bool
+gameIsOver state = lives state == 0
 
-nextLevel :: Maze -> Bool
-nextLevel m = all (== Nothing) [getCollectible m p | (Floor _ p _ _) <- m]
+-- | Checks if the player has eaten all dots and can therefore proceed to the next level
+levelIsEmpty :: Maze -> Bool
+levelIsEmpty m = all (== Nothing) [getCollectible m p | (Floor _ p _ _) <- m]
