@@ -9,7 +9,7 @@ import System.Random (StdGen)
 
 data WorldState = WorldState
   { gameState :: GameState,
-    highScores :: HighScores,
+    highScores :: [String],
     textures :: AllTextures,
     animation :: AllAnimations
   }
@@ -23,17 +23,17 @@ createWorldState l =
     seed <- generateSeed
     WorldState (nextState level l seed) highscores textures <$> loadAnimations
 
-createCustomWorldState :: Level -> IO WorldState
-createCustomWorldState l =
+createCustomWorldState :: WorldState -> Level -> IO WorldState
+createCustomWorldState ws l =
   do
     textures <- loadTextures
     level <- loadCustomLevel l
     highscores <- loadHighScores 
     seed <- generateSeed
-    WorldState (nextState level l seed) highscores textures <$> loadAnimations
 
-
-type HighScores = [String]
+    if not (null level)
+      then WorldState (nextState level l seed) highscores textures <$> loadAnimations
+      else return ws
 
 data AllTextures = AllTextures
   { wallTextures :: WallTextures,

@@ -18,7 +18,7 @@ import View.World
 step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
   | pauseToggle (screenState state) == Depressed = return ws
-  | gameOver state = handleGameOver (gameState ws)
+  | gameOver state = handleGameOver ws
   | nextLevel (maze state) = createWorldState (level state + 1)
   | otherwise =
       return $
@@ -87,9 +87,9 @@ handleEffects gs
             then (True, wellbeing x, Just x)
             else r
 
-handleGameOver :: GameState -> IO WorldState
-handleGameOver state = do
-  -- saveHighScores (show $ playerType $ player state, score state)
+handleGameOver :: WorldState -> IO WorldState
+handleGameOver ws = do
+  saveHighScores (playerType $ player (gameState ws), score (gameState ws)) (highScores ws)
   createWorldState 1
 
 updateGhost :: Ghost -> Time -> GameState -> Ghost
