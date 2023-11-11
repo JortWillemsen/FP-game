@@ -14,10 +14,10 @@ main :: IO ()
 main = do
   state <- createWorldState 1
   playIO
-    FullScreen
-    black -- Background color
-    30 -- Frames per second
-    state -- Initial state
-    view
-    input -- Event function
-    step -- Step function
+    FullScreen  -- Display type
+    black       -- Background color
+    30          -- Frames per second
+    state       -- Initial state
+    view        -- View function to render
+    input       -- Event function
+    step        -- Step function

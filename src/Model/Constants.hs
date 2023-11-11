@@ -17,3 +17,15 @@ spawnTime = 2
 
 frightenedTime :: Float
 frightenedTime = 10
+
+interval :: Float
+interval = 0.033
+
+initiateLives :: Int
+initiateLives = 3
+
+textureSize :: Float
+textureSize = 16.0
+
+scalingFactor :: Float
+scalingFactor = 1.5

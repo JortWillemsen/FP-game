@@ -9,21 +9,13 @@ import Model.Score
 import Model.Move (Direction(L, U, D, R), Toggled (Released), Moveable (moveTo))
 import System.Random (StdGen, mkStdGen)
 import Model.Spawning (randomPlayerSpawn, randomSpawns)
-import Model.Constants (scatterTime)
+import Model.Constants (scatterTime, initiateLives)
 import qualified Model.Player as Player
 import qualified Model.Player as Ghost
 
 type Time = Float
-
--- | The desired interval between frames ()
-interval :: Time
-interval = 0.033
-
 type Lives = Int
 type Level = Int
-
-initiateLives :: Lives
-initiateLives = 3
 
 data Screen = Show | Hide deriving (Eq)
 

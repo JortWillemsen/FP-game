@@ -2,9 +2,9 @@ Puck-Man 1200
 Puck-Man 340
 Puck-Man 270
 Puck-Man 220
+Puck-Man 200
 Puck-Man 180
 Puck-Man 150
 Puck-Man 120
 Puck-Man 110
-Puck-Man 70
 Puck-Man 70
