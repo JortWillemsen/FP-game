@@ -1,6 +1,15 @@
 # Puck-Man 
 Developed by Jort Willemsen en Annemae van de Hoef 
 
+# How To Play
+To run the game use:
+
+```stack build```
+
+When running the game, you play as Puck-Man who you can control with the WASD keys. Your goal is to eat all the dots and adventure through the levels to get the highest score possible. Be sure to eat the energizers once in a while so you can take a break from running from the ghosts. 
+
+Furthermore, you can go to the menu by pressing 'm', pause the game by pressing 'p', or view the current high score by pressing 'h'.
+
 # Custom Levels 
 There is an opportunity to create your own custom level. You can do this by adjusting one of the five .txt files in the level/custom folder. You can do this by using the following symbols:
 

@@ -16,8 +16,9 @@ data WorldState = WorldState
 
 -- | Creates the initial world state by loading textures, animations, high scores and a random seed
 createWorldState :: Level -> IO WorldState
-createWorldState l =
+createWorldState n =
   do
+    let l = if n > 5 then 1 else n    
     textures <- loadTextures
     level <- loadLevel l "level/"
     highscores <- loadHighScores
@@ -26,8 +27,9 @@ createWorldState l =
 
 -- | Creates the initial world state for a custom level
 createCustomWorldState :: WorldState -> Level -> IO WorldState
-createCustomWorldState ws l =
+createCustomWorldState ws n =
   do
+    let l = if n > 5 then 1 else n 
     textures <- loadTextures
     level <- loadLevel l "level/custom/"
     highscores <- loadHighScores 
