@@ -109,7 +109,7 @@ showAll s ws@WorldState {gameState = state, textures = allTextures, animation = 
 
 -- | Shows the lives at the top of the screen whilest playing
 showLives :: (Float, Float) -> GameState -> Picture -- Hearts
-showLives s state = translate (abs x + x - 110) (abs y + y) (Color red $ Scale 0.2 0.2 $ Text ("Lives: " ++ (show $ lives state)))
+showLives s state = translate (abs x + x - 110) (abs y + y) (Color red $ Scale 0.2 0.2 $ Text ("Lives: " ++ show (lives state)))
   where
     (x, y) = centerOfMaze s
 
@@ -121,7 +121,7 @@ showPause s text = translate x y (paused $ textTextures text)
 
 -- | Shows the score at the top of the screen
 showScore :: (Float, Float) -> GameState -> Picture
-showScore s state = translate (abs x - x + 10) (abs y + y) (Color white $ Scale 0.2 0.2 $ Text ("Score: " ++ (show $ score state)))
+showScore s state = translate (abs x - x + 10) (abs y + y) (Color white $ Scale 0.2 0.2 $ Text ("Score: " ++ show (score state)))
   where
     (x, y) = centerOfMaze s
 
@@ -167,7 +167,7 @@ showGhosts gstate animations = Pictures [showGhost $ blinky gstate, showGhost $ 
         anim = case w of
           Frightened _ -> frightenedAnim animations
           Respawning -> eyesAnim animations
-          otherwise -> case t of
+          _ -> case t of
             Blinky -> blinkyAnim animations
             Pinky -> pinkyAnim animations
             Inky -> inkyAnim animations

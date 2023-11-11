@@ -1,5 +1,4 @@
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE EmptyCase #-}
 module Model.Ghost where
 
 import Model.Collidable (Collidable (hitBox, collisions, name), HitBox)
@@ -83,13 +82,13 @@ makeFrightened g = case wellbeing g of
 translateGhost :: (Collidable a, RandomGen g) => Ghost -> g -> Position -> [a] -> Ghost
 translateGhost g gen p cs = case wellbeing g of
   -- If the ghost is frightened we want to select a random move based on the moves it can do
-  (Frightened _) -> if (length (possibleMoves movesPerDir) < 1)
+  (Frightened _) -> if null (possibleMoves movesPerDir)
     -- If we have no available moves, we want to turn back
     then move g (inverse $ dir g) 0
     else fst $ fst $ randomElementFromList (possibleMoves movesPerDir) gen
   
   -- otherwise we want to select the move most likely to get us to our target
-  _ -> if length sortedMoves < 1
+  _ -> if null sortedMoves
     then move g (inverse $ dir g) 0
     else fst $ head sortedMoves
   where  

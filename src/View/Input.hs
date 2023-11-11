@@ -3,10 +3,12 @@ module View.Input where
 import Graphics.Gloss.Interface.IO.Game (Event (EventKey), Key (Char), KeyState (Down, Up), Modifiers (shift, ctrl))
 import Model.Model
 import View.World
+    ( createCustomWorldState,
+      createWorldState,
+      WorldState(WorldState, gameState) )
 import Model.Player (Player(Player))
 import Model.Move ( InputBuffer, Toggled(Released, Depressed) )
 import GHC.Real (fromIntegral)
-import View.World (createCustomWorldState)
 import Debug.Trace
 
 input :: Event -> WorldState -> IO WorldState

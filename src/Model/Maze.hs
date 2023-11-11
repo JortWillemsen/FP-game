@@ -162,8 +162,8 @@ addWallTypesToMaze m = map (addWallTypeToTile m) m
 addWallTypeToTile :: Maze -> Tile -> Tile
 addWallTypeToTile m (Floor t p c s) = Floor t p c s
 addWallTypeToTile m (Wall p _) = case getNeighbouringTiles m p of
+  (Wall {},  Wall {},  Wall {},  Wall {})   -> Wall p   Nothing
   (Wall {},  Wall {},  Wall {},  Floor {})  -> Wall p $ Just (Edge S)
-  (Wall {},  Wall {},  Wall {},  Wall {})   -> Wall p $ Nothing
   (Floor {}, Floor {}, Floor {}, Floor {})  -> Wall p $ Just Contained
   (Wall {},  Wall {},  Floor {}, Wall {})   -> Wall p $ Just (Edge E)
   (Wall {},  Floor {}, Wall {},  Wall {})   -> Wall p $ Just (Edge W)

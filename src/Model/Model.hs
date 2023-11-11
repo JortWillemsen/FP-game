@@ -1,6 +1,4 @@
-{-# LANGUAGE InstanceSigs #-}
 module Model.Model where
-  
 
 import Model.Ghost (Ghost(Ghost), GhostType (Blinky, Pinky, Inky, Clyde), Wellbeing (Spawning, Frightened), newWellbeing, spawn)
 import Model.Maze (Maze, loadMaze, getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn, ScatterSpawn), pos)
@@ -56,7 +54,7 @@ basicState level l r =
     0 
     0 
     (Player PuckMan playerSpawn inputBufferWASD L playerSpawn)  
-    (Ghost Blinky (ghostSpawns!!0) (ghostSpawns!!0) L (scatterSpawns!!0) (Spawning 0))
+    (Ghost Blinky (head ghostSpawns) (head ghostSpawns) L (head scatterSpawns) (Spawning 0))
     (Ghost Pinky (ghostSpawns!!1) (ghostSpawns!!1) R (scatterSpawns!!1) (Spawning 5)) 
     (Ghost Inky (ghostSpawns!!2) (ghostSpawns!!2) L (scatterSpawns!!2) (Spawning 10)) 
     (Ghost Clyde (ghostSpawns!!3) (ghostSpawns!!3) R (scatterSpawns!!3) (Spawning 20))
