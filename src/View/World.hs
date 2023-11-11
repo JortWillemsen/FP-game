@@ -21,7 +21,7 @@ createWorldState l =
     level <- loadLevel l 
     highscores <- loadHighScores
     seed <- generateSeed
-    WorldState (nextState level l seed) highscores textures <$> loadAnimations
+    WorldState (basicState level l seed) highscores textures <$> loadAnimations
 
 createCustomWorldState :: WorldState -> Level -> IO WorldState
 createCustomWorldState ws l =
@@ -32,7 +32,7 @@ createCustomWorldState ws l =
     seed <- generateSeed
 
     if not (null level)
-      then WorldState (nextState level l seed) highscores textures <$> loadAnimations
+      then WorldState (basicState level l seed) highscores textures <$> loadAnimations
       else return ws
 
 data AllTextures = AllTextures
@@ -101,7 +101,6 @@ loadAnimations =
     let scattered = Animation 0.5 scatteredFrames
     let energizer = Animation 0.3 energizerFrames
     let eyes = Animation 2 eyesFrames
-
 
     return $ AllAnimations eat blinky pinky inky clyde scattered eyes energizer
 

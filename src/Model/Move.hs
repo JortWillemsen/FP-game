@@ -1,7 +1,7 @@
 module Model.Move where
 
 import Model.Constants
-import Model.Collidable (Collidable, collides, collidesWith)
+import Model.Collidable (Collidable, collides, collidesWith, collidesWithTag)
 import Debug.Trace (trace)
 import Data.List (sort, sortBy)
 import Data.Function (on)
@@ -29,7 +29,6 @@ class Moveable a where
   move :: a -> Direction -> Speed -> a
   moveTo :: a -> Position -> a
   pos :: a -> Position
-  buffer :: a -> [InputBuffer]
   dir :: a -> Direction
 
 -- | Moves the moveable up
@@ -54,8 +53,8 @@ pythagoras (x, y) (x', y') = sqrt (a + b) where
   a = abs (x' - x) **2
   b = abs (y' - y) **2
 
--- Takes a movable with a direction and a list of all possible collisions to check if the move is valid
+-- | Takes a movable with a direction and a list of all possible collisions to check if the move is valid
 tryMove :: (Moveable a, Collidable a, Collidable b) => a -> Direction -> [b] -> Maybe a
-tryMove m d cs = if any (\x -> collidesWith (move m d speed) x ["wall"]) cs 
+tryMove m d cs = if any (collidesWithTag ["wall"] $ move m d speed) cs 
   then Nothing
   else Just (move m d speed)

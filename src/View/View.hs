@@ -35,9 +35,9 @@ view ws = let (x, y) = offset $ calculateScreenSize ws in return $ translate x y
 
 showAll :: (Float, Float) -> WorldState -> Picture
 showAll s ws@WorldState {gameState = state, textures = allTextures, animation = allAnimations}
-  | menuToggle (screenState state) == Depressed = showMenu s allTextures
-  | highscoreToggle (screenState state) == Depressed = showHighScores s ws
-  | pauseToggle (screenState state) == Depressed = Pictures $ base ++ [showPause s allTextures]
+  | menuToggle (screenState state) == Show = showMenu s allTextures
+  | highscoreToggle (screenState state) == Show = showHighScores s ws
+  | pauseToggle (screenState state) == Show = Pictures $ base ++ [showPause s allTextures]
   | otherwise = Pictures base
     where
       base = showMaze state allTextures allAnimations (time state) ++ [showPlayer state allAnimations,
@@ -84,7 +84,7 @@ showPlayer gstate animations = case player gstate of
 showGhosts :: GameState -> AllAnimations -> Picture
 showGhosts gstate animations = Pictures [showGhost $ blinky gstate, showGhost $ pinky gstate, showGhost $ inky gstate, showGhost $ clyde gstate] where
   showGhost :: Ghost -> Picture
-  showGhost (Ghost t (x, y) _ _ _ w _) = translate x y $ animateTexture anim (time gstate) 
+  showGhost (Ghost t (x, y) _ _ _ w) = translate x y $ animateTexture anim (time gstate) 
     where 
       anim = case w of
         Frightened _ -> frightenedAnim animations

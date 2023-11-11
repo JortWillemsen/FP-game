@@ -3,26 +3,19 @@ import Model.Maze (getSpawns, SpawnPoint (PlayerSpawn, GhostSpawn, ScatterSpawn)
 import System.Random (RandomGen, Random (randomRs))
 import Model.Player (Player)
 import Model.Move (Position)
-import View.Random (randomElementFromList)
+import View.Random (randomElementFromList, randomIndexesFromList)
 import Model.Ghost (Ghost)
 import Data.List (nub)
 
+-- | Calculates a random spawn point for the player based on all possible spawn points
 randomPlayerSpawn :: (RandomGen g) => g -> Maze -> (Position, g)
 randomPlayerSpawn g m = (pos spawnPoint, newGen) where
   (spawnPoint, newGen) = randomElementFromList spawns g
   spawns = getSpawns PlayerSpawn m
 
-randomGhostSpawns :: (RandomGen g) => g -> [a] -> Maze -> ([Position], g)
-randomGhostSpawns gen ghosts m = (map (spawnPositions !!) randomIndices, gen)
+-- | Assigns a random spawn point for each ghost based on all possible spawn points
+randomSpawns :: (RandomGen g) => g -> SpawnPoint -> [a] -> Maze -> ([Position], g)
+randomSpawns gen sp ghosts m = (map (spawnPositions !!) $ randomIndexesFromList gen (length ghosts) (length spawns), gen)
   where
-    randomIndices = take (length ghosts) $ nub $ randomRs (0, length spawns - 1) gen
-    spawns = getSpawns GhostSpawn m
+    spawns = getSpawns sp m
     spawnPositions = map pos spawns
-
-randomScatterSpawns :: (RandomGen g) => g -> [a] -> Maze -> ([Position], g)
-randomScatterSpawns gen ghosts m = (map (spawnPositions !!) randomIndices, gen)
-  where
-    randomIndices = take (length ghosts) $ nub $ randomRs (0, length spawns - 1) gen
-    spawns = getSpawns ScatterSpawn m
-    spawnPositions = map pos spawns
-

@@ -10,11 +10,11 @@ import Model.Model
       GameState(lives, screenState, level, ticks, time, pinky, inky,
                 score, blinky, clyde, player, generator, maze),
       ScreenState(pauseToggle),
-      Time )
+      Time, Screen (Show) )
 import Model.Move (Move, Moveable (dir, move, pos), Position, Toggled (Depressed, Released), down, left, pythagoras, right, up)
 import Model.Player
     ( translatePlayer, Player(position, playerType) )
-import Model.Score (updateHighScores, updateScore)
+import Model.Score (updateScore, HighScore (HighScore))
 import Model.Collidable ( collidesReturn )
 import System.Random ( Random(random), StdGen )
 import View.File (saveHighScores)
@@ -25,7 +25,7 @@ import View.World
 step :: Float -> WorldState -> IO WorldState
 step interval ws@WorldState {gameState = state}
   -- Check if we need to change to another state
-  | pauseToggle (screenState state) == Depressed = return ws
+  | pauseToggle (screenState state) == Show = return ws
   | gameIsOver state = handleGameOver ws
   | levelIsEmpty (maze state) = createWorldState (level state + 1)
   -- Otherwise keep running current state
@@ -107,12 +107,12 @@ handleCollectibleCollision gs t = case t of
 -- | Save the score in the high scores file and reset the level to level 1
 handleGameOver :: WorldState -> IO WorldState
 handleGameOver ws = do
-  saveHighScores (playerType $ player (gameState ws), score (gameState ws)) (highScores ws)
+  saveHighScores (HighScore (playerType $ player (gameState ws), score (gameState ws))) (highScores ws)
   createWorldState 1
 
 -- | Calculates the target of the ghost and moves it towards it's target
 updateGhost :: Ghost -> Time -> GameState -> Ghost
-updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Ghost t p sp d scp (updateWellbeing ghost interval) ib) (generator state) (ghostTarget ghost) (maze state)
+updateGhost ghost@(Ghost t p sp d scp w) interval state = translateGhost (Ghost t p sp d scp (updateWellbeing ghost interval)) (generator state) (ghostTarget ghost) (maze state)
   where
     -- | Calculating the target of the ghost
     ghostTarget :: Ghost -> Model.Move.Position
@@ -122,7 +122,7 @@ updateGhost ghost@(Ghost t p sp d scp w ib) interval state = translateGhost (Gho
       -- If we are scattered, we need to find our randomly assigned scatter position
       (Scattered _) -> scatter g
       -- Otherwise we need to calculate our target to chase the player
-      otherwise -> case ghostType g of
+      _ -> case ghostType g of
         Blinky -> blinkyTarget
         Pinky -> pinkyTarget
         Inky -> inkyTarget

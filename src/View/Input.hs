@@ -9,29 +9,25 @@ import GHC.Real (fromIntegral)
 import View.World (createCustomWorldState)
 import Debug.Trace
 
-toggle :: Toggled -> Toggled
-toggle t | t == Released = Depressed
-         | otherwise = Released
-
 input :: Event -> WorldState -> IO WorldState
 input e ws@WorldState {gameState = state} = handleKey e state ws
 
 -- Handle pause key
 handleKey :: Event -> GameState -> WorldState -> IO WorldState
 handleKey (EventKey (Char c) t m _) state ws
-  | c == 'p' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = toggle (pauseToggle $ screenState state)
-                                                        , menuToggle = Released
-                                                        , highscoreToggle = Released}}}
-  | c == 'm' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = Depressed
-                                                                                    , menuToggle = toggle (menuToggle $ screenState state)
-                                                                                    , highscoreToggle = Released}}}
-  | c == 'h' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = Depressed
-                                                                                    , menuToggle = Released
-                                                                                    , highscoreToggle = toggle (highscoreToggle $ screenState state)}}}
+  | c == 'p' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = toggleScreen (pauseToggle $ screenState state)
+                                                        , menuToggle = Hide
+                                                        , highscoreToggle = Hide}}}
+  | c == 'm' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = Show
+                                                                                    , menuToggle = toggleScreen (menuToggle $ screenState state)
+                                                                                    , highscoreToggle = Hide}}}
+  | c == 'h' && t == Down = return ws {gameState = state {screenState = ScreenState { pauseToggle = Show
+                                                                                    , menuToggle = Hide
+                                                                                    , highscoreToggle = toggleScreen (highscoreToggle $ screenState state)}}}
   | c `elem` ['1', '2', '3', '4', '5'] = case ctrl m of 
-    Down -> if menuToggle (screenState state) == Depressed then createCustomWorldState ws (read [c]) 
+    Down -> if menuToggle (screenState state) == Show then createCustomWorldState ws (read [c]) 
            else return ws {gameState = state }
-    Up -> if menuToggle (screenState state) == Depressed
+    Up -> if menuToggle (screenState state) == Show
                                           then createWorldState (read [c]) 
                                           else return ws {gameState = state }
   | c `elem` ['w', 'a', 's', 'd'] = return ws {gameState = state {player = updateInputForPlayer c (player state)}}

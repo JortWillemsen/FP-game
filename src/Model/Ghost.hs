@@ -36,25 +36,25 @@ data Ghost = Ghost {
   spawnPoint :: Position, -- spawn point
   direction :: Direction, -- direction facing
   scatter   :: Position,  -- position to target in scatter wellbeing
-  wellbeing :: Wellbeing, -- wellbeing of the ghost
-  buffer :: [InputBuffer] -- Input buffer if ever needed
+  wellbeing :: Wellbeing  -- wellbeing of the ghost
 } deriving (Eq)
 
 instance Moveable Ghost where
   pos :: Ghost -> Position
-  pos (Ghost _ p _ _ _ _ _) = p
-  buffer :: Ghost -> [InputBuffer]
-  buffer (Ghost _ _ _ _ _ _ b) = b
+  pos (Ghost _ p _ _ _ _) = p
+  
   dir :: Ghost -> Direction
-  dir (Ghost _ _ _ d _ _ _) = d
+  dir (Ghost _ _ _ d _ _) = d
+  
   moveTo :: Ghost -> Position -> Ghost
-  moveTo (Ghost t p sp d scp w b) new = Ghost t new sp d scp w b
+  moveTo (Ghost t p sp d scp w) new = Ghost t new sp d scp w
+  
   move :: Ghost -> Direction -> Speed -> Ghost
-  move (Ghost t (x, y) sp _ scp w b) d s
-    | d == U = Ghost t (x - s, y) sp d scp w b
-    | d == D = Ghost t (x + s, y) sp d scp w b
-    | d == L = Ghost t (x, y - s) sp d scp w b
-    | d == R = Ghost t (x, y + s) sp d scp w b
+  move (Ghost t (x, y) sp _ scp w) d s
+    | d == U = Ghost t (x - s, y) sp d scp w
+    | d == D = Ghost t (x + s, y) sp d scp w
+    | d == L = Ghost t (x, y - s) sp d scp w
+    | d == R = Ghost t (x, y + s) sp d scp w
   
 -- | We need this function since it won't work when both whe player and ghost records are imported for some reason
 spawn :: Ghost -> Position
@@ -66,11 +66,11 @@ instance Collidable Ghost where
   name :: Ghost -> String
   name (Ghost {}) = "ghost"
   hitBox :: Ghost -> HitBox
-  hitBox (Ghost _ p@(x, y) _ _ _ _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
+  hitBox (Ghost _ p@(x, y) _ _ _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
 
 -- | Inserts a new wellbeing in the ghost
 newWellbeing :: Wellbeing -> Ghost -> Ghost
-newWellbeing newW (Ghost t p sp d scp w b) = Ghost t p sp d scp newW b
+newWellbeing newW (Ghost t p sp d scp w) = Ghost t p sp d scp newW
 
 -- | Makes the ghost frightened if it is not spawning or respawning
 makeFrightened :: Ghost -> Ghost
