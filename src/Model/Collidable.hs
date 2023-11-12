@@ -3,13 +3,15 @@ import Data.List (intersect)
 
 type Position = (Float, Float)
 
+type Name = String 
+
 type HitBox = [Position]
 
 -- | Every entity in the game that can be collided with needs derive from this class
 class (Eq a) => Collidable a where
   hitBox :: a -> HitBox         -- Defines the size and position of the hitbox relative to the entity
-  collisions :: a -> [String]   -- Defines the entities it can collide with
-  name :: a -> String           -- Defines it's own name for other collision derivations
+  collisions :: a -> [Name]   -- Defines the entities it can collide with
+  name :: a -> Name           -- Defines it's own name for other collision derivations
 
 -- | Checks if a collision has occurred between two collidables
 collides :: (Collidable a, Collidable b) => a -> b -> Bool

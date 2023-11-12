@@ -70,15 +70,14 @@ loadLevel i fp = do
 loadHighScores :: IO [String]
 loadHighScores = do
     scores <- readFile "score/highscores.txt"
-    
-    -- Due to Haskell's laziness we need to use seq to close the file from reading since we use it when we want to write to it
-    return $ scores `seq` lines scores
+    return $ lines scores
 
 -- | Saves a new high score (ordered) into the high scores file
 saveHighScores :: HighScore -> [String] -> IO ()
 saveHighScores score scores = do
     -- Finds the high scores, inserts the new one and saves the 10 highest
-    writeFile "score/highscores.txt" ((buildScoreString . take 10 . reverse . insert score . reverse  . buildScoreList) scores)
+    -- Due to Haskell's laziness we need to use seq to close the file from reading since we use it when we want to write to it
+    length scores `seq` writeFile "score/highscores.txt" ((buildScoreString . take 10 . reverse . insert score . reverse  . buildScoreList) scores)
 
     where
         -- | Serializes into the High Score type

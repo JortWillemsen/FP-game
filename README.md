@@ -20,9 +20,11 @@ There is an opportunity to create your own custom level. You can do this by adju
     G - Ghost spawn point 
     P - Player spawn point
     S - Scatter spawn point (this is where a ghost will flee to when frightened)
+    T - Trapdoor which ghosts can use to leave their ghost house. 
 
 It is important to follow the following rules when creating a custom level:
 
 1. The level must be a rectangle whose outer edge consists entirely of X's.
-2. There should be at least one player spawn (P), four ghost spawns (G), and four scatter spawns (S) in the level.
+2. There should be at least one player spawn (P), one trap door (T), four ghost spawns (G), and four scatter spawns (S) in the level.
+3. Make sure there are no white spaces around your maze.
 

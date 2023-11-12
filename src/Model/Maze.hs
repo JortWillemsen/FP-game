@@ -1,9 +1,12 @@
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE InstanceSigs #-}
 module Model.Maze where
 
 import Data.Maybe (fromMaybe, mapMaybe)
 import Model.Constants
 import Model.Move (Position)
-import Model.Collidable (Collidable (hitBox, collisions, name))
+import Model.Collidable (Collidable (hitBox, collisions, name), Name, HitBox)
 import Model.Ghost
 
 data Tile
@@ -11,19 +14,50 @@ data Tile
   | Wall Position (Maybe WallType)
   deriving (Show, Ord, Eq)
 
+type Maze = [Tile]
+
 data FloorType = Path | Trapdoor deriving (Show, Eq, Ord)
 
+data SpawnPoint
+  = FruitSpawn
+  | PlayerSpawn
+  | GhostSpawn
+  | ScatterSpawn
+  deriving (Eq, Show, Ord)
+
+data CornerDirection = Nw | Ne | Sw | Se deriving (Show, Eq, Ord)
+
+data EdgeDirection = N | E | S | W deriving (Show, Eq, Ord)
+
+data PipeDirection = H | V deriving (Show, Eq, Ord)
+
+data WallType
+  = Corner CornerDirection
+  | Edge EdgeDirection
+  | Pipe PipeDirection
+  | Stump EdgeDirection
+  | Contained
+  deriving (Show, Eq, Ord)
+
+data Collectable
+  = Dot       -- 10 points
+  | Energizer -- 50 points
+  deriving (Show, Eq, Ord)
+
 instance Collidable Tile where
+  collisions :: Tile -> [Name]
   collisions (Floor Trapdoor _ _ _) = ["player"]
   collisions (Floor _ _ (Just _) _) = ["player"]
   collisions (Floor {}) = []
   collisions (Wall {}) = ["ghost", "player"]
+  name :: Tile -> Name
   name (Floor Trapdoor _ _ _) = "trapdoor"
 
   name (Floor _ _ (Just _) _) = "collectible"
   name (Floor {}) = "floor"
   name (Wall {}) = "wall"
 
+  hitBox :: Tile -> HitBox
   hitBox (Wall p@(x, y) _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
   hitBox (Floor Trapdoor p@(x, y) _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
   hitBox (Floor _ p@(x, y) (Just Energizer) _ ) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
@@ -34,13 +68,6 @@ instance Collidable Tile where
 pos :: Tile -> Position
 pos (Wall p _) = p
 pos (Floor  _ p _ _) = p
-
--- | Finds the collectible on the tile
-collectable :: Tile -> Maybe Collectable
-collectable (Wall {}) = Nothing
-collectable (Floor _ _ x _ ) = x
-
-type Maze = [Tile]
 
 -- XXXXX
 -- XOOOX
@@ -76,60 +103,6 @@ basicMaze =
     Wall (3.0 * tileSize, 0.0 * tileSize) (Just (Pipe H)),
     Wall (4.0 * tileSize, 0.0 * tileSize) (Just (Corner Se))
   ]
-
-data SpawnPoint
-  = FruitSpawn
-  | PlayerSpawn
-  | GhostSpawn
-  | ScatterSpawn
-  deriving (Eq, Show, Ord)
-
-data CornerDirection = Nw | Ne | Sw | Se deriving (Show, Eq, Ord)
-
-data EdgeDirection = N | E | S | W deriving (Show, Eq, Ord)
-
-data PipeDirection = H | V deriving (Show, Eq, Ord)
-
-data WallType
-  = Corner CornerDirection
-  | Edge EdgeDirection
-  | Pipe PipeDirection
-  | Stump EdgeDirection
-  | Contained
-  deriving (Show, Eq, Ord)
-
-data Collectable
-  = Dot       -- 10 points
-  | Energizer -- 50 points
-  deriving (Show, Eq, Ord)
-
--- | Finds a collectible in the maze
-getCollectible :: Maze -> Position -> Maybe Collectable
-getCollectible m p = case findTileInMaze m p of
-  (Floor _ _ c _) -> c
-  _ -> Nothing
-
--- | Finds all energizers in a maze
-getEnergizers :: Maze -> [Tile]
-getEnergizers = filter isEnergizer
-
--- | Checks if a tile holds an energizer
-isEnergizer :: Tile -> Bool
-isEnergizer t = case t of
-  (Wall {}) -> False
-  (Floor _ _ c _) -> case c of
-    Just Energizer -> True
-    _ -> False 
-
--- | Removes a collectible from a tile in the maze
-removeCollectible :: Maze -> Position -> Maze
-removeCollectible m p = case findTileInMaze m p of
-  (Floor _ p (Just a) s) -> removeCollectible' m p 
-  where 
-    removeCollectible' (tile@(Floor t pos (Just a) s):ts) p  
-      | p == pos = Floor t pos Nothing s : ts
-      | otherwise = tile : removeCollectible' ts p 
-    removeCollectible' (t:ts) p = t : removeCollectible' ts p 
 
 -- | Loads the maze from a string representation
 loadMaze :: [String] -> Maze
@@ -230,3 +203,36 @@ neighborsList (a, b, c, d) = [a, b, c, d]
 -- | Finds all floor tiles in a maze
 floors :: Maze -> Maze
 floors xs = [ x | x@(Floor {}) <- xs]
+
+-- | Finds a collectible in the maze
+getCollectible :: Maze -> Position -> Maybe Collectable
+getCollectible m p = case findTileInMaze m p of
+  (Floor _ _ c _) -> c
+  _ -> Nothing
+
+-- | Finds the collectible on the tile
+collectable :: Tile -> Maybe Collectable
+collectable (Wall {}) = Nothing
+collectable (Floor _ _ x _ ) = x
+
+-- | Finds all energizers in a maze
+getEnergizers :: Maze -> [Tile]
+getEnergizers = filter isEnergizer
+
+-- | Checks if a tile holds an energizer
+isEnergizer :: Tile -> Bool
+isEnergizer t = case t of
+  (Wall {}) -> False
+  (Floor _ _ c _) -> case c of
+    Just Energizer -> True
+    _ -> False 
+
+-- | Removes a collectible from a tile in the maze
+removeCollectible :: Maze -> Position -> Maze
+removeCollectible m p = case findTileInMaze m p of
+  (Floor _ p (Just a) s) -> removeCollectible' m p 
+  where 
+    removeCollectible' (tile@(Floor t pos (Just a) s):ts) p  
+      | p == pos = Floor t pos Nothing s : ts
+      | otherwise = tile : removeCollectible' ts p 
+    removeCollectible' (t:ts) p = t : removeCollectible' ts p 

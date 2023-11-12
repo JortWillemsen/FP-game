@@ -14,8 +14,6 @@ type Position = (Float, Float)
 
 type Speed = Float
 
-type Move = (Position, Position)
-
 data Direction = L | R | U | D deriving (Eq, Show)
 
 -- | Inverses the direction

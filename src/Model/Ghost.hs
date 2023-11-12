@@ -1,7 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 module Model.Ghost where
 
-import Model.Collidable (Collidable (hitBox, collisions, name), HitBox)
+import Model.Collidable (Collidable (hitBox, collisions, name), HitBox, Name)
 import Model.Constants
 import Model.Move
 import Data.List (sortBy)
@@ -62,7 +62,7 @@ spawn = spawnPoint
 instance Collidable Ghost where
   collisions :: Ghost -> [String]
   collisions (Ghost {}) = ["wall", "player"]
-  name :: Ghost -> String
+  name :: Ghost -> Name
   name (Ghost {}) = "ghost"
   hitBox :: Ghost -> HitBox
   hitBox (Ghost _ p@(x, y) _ _ _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]

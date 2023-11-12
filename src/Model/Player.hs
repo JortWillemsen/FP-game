@@ -1,7 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 module Model.Player where
 
-import Model.Collidable (Collidable (collisions, hitBox, name), HitBox)
+import Model.Collidable (Collidable (collisions, hitBox, name), HitBox, Name)
 import Model.Constants
 import Model.Maze (Maze)
 import Model.Move
@@ -47,10 +47,10 @@ instance Moveable Player where
   dir (Player _ _ _ d _) = d
 
 instance Collidable Player where
-  name :: Player -> String
+  name :: Player -> Name
   name (Player {}) = "player"
   
-  collisions :: Player -> [String]
+  collisions :: Player -> [Name]
   collisions (Player {}) = ["ghost", "wall", "trapdoor", "collectible"]
   
   hitBox :: Player -> HitBox

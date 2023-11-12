@@ -13,7 +13,8 @@ import qualified Model.Player as Ghost
 
 type Time = Float
 type Lives = Int
-type Level = Int
+
+type Level = Int 
 
 data Screen = Show | Hide deriving (Eq)
 

@@ -11,7 +11,7 @@ import Model.Model
                 score, blinky, clyde, player, generator, maze),
       ScreenState(pauseToggle),
       Time, Screen (Show) )
-import Model.Move (Move, Moveable (dir, move, pos), Position, Toggled (Depressed, Released), down, left, pythagoras, right, up)
+import Model.Move (Moveable (dir, move, pos), Position, Toggled (Depressed, Released), down, left, pythagoras, right, up)
 import Model.Player
     ( translatePlayer, Player(position, playerType) )
 import Model.Score (updateScore, HighScore (HighScore))
