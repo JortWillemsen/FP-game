@@ -53,6 +53,6 @@ pythagoras (x, y) (x', y') = sqrt (a + b) where
 
 -- | Takes a movable with a direction and a list of all possible collisions to check if the move is valid
 tryMove :: (Moveable a, Collidable a, Collidable b) => a -> Direction -> [b] -> Maybe a
-tryMove m d cs = if any (collidesWithTag ["wall"] $ move m d speed) cs 
+tryMove m d cs = if any (collidesWithTag ["wall", "trapdoor"] $ move m d speed) cs 
   then Nothing
   else Just (move m d speed)

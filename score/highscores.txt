@@ -1,4 +1,5 @@
 Puck-Man 1000
+Puck-Man 120
 Puck-Man 100
 Puck-Man 100
 Puck-Man 70
@@ -6,5 +7,4 @@ Puck-Man 70
 Puck-Man 60
 Puck-Man 40
 Puck-Man 40
-Puck-Man 30
 Puck-Man 30
