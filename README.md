@@ -26,5 +26,5 @@ It is important to follow the following rules when creating a custom level:
 
 1. The level must be a rectangle whose outer edge consists entirely of X's.
 2. There should be at least one player spawn (P), one trap door (T), four ghost spawns (G), and four scatter spawns (S) in the level.
-3. Make sure there are no white spaces around your maze.
+3. Make sure there aren't any whitespaces surrounding your maze
 

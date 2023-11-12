@@ -2,7 +2,7 @@ module Controller.Controller where
 
 import Graphics.Gloss ()
 import Graphics.Gloss.Interface.IO.Game ()
-import Model.Constants (frightenedTime, normalTime, scatterTime, spawnTime, tileSize)
+import Model.Constants (frightenedTime, normalTime, scatterTime, spawnTime, tileSize, clydeScatterDistance, pinkyOffset, inkyOffset)
 import Model.Ghost (Ghost (Ghost, ghostType, spawnPoint, wellbeing, scatter), GhostType (Blinky, Clyde, Inky, Pinky), Wellbeing (Frightened, Normal, Respawning, Scattered, Spawning), getTime, newWellbeing, spawn, translateGhost, makeFrightened)
 import Model.Maze (Maze, Tile (Floor, Wall), getCollectible, getEnergizers, Collectable (Dot, Energizer), floors, collectable)
 import Model.Model
@@ -132,18 +132,18 @@ updateGhost ghost@(Ghost t p sp d scp w) interval state = translateGhost (Ghost 
     blinkyTarget = position $ player state
 
     -- Pinky's target is always 2 tiles in front of the player
-    pinkyTarget = position $ move (player state) (dir $ player state) (tileSize * 2)
+    pinkyTarget = position $ move (player state) (dir $ player state) (tileSize * pinkyOffset)
     
     -- Inky's target is based based on the distance Blinky is from the player and doubles those vectors
     inkyTarget =
-      let (x, y) = position $ move (player state) (dir $ player state) (tileSize * 2)
+      let (x, y) = position $ move (player state) (dir $ player state) (tileSize * inkyOffset)
           distance = pythagoras (pos $ blinky state) (position $ player state)
        in (x + distance, y + distance)
     
     -- Clyde's target is the player until he is within 5 tiles of him. 
     -- Then he gets scared and runs off to his scatter position
     clydeTarget =
-      if pythagoras (pos $ clyde state) (pos $ player state) < 5
+      if pythagoras (pos $ clyde state) (pos $ player state) < clydeScatterDistance
         then scatter (clyde state)
         else position $ player state
 

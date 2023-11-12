@@ -11,7 +11,7 @@ import Graphics.Gloss
     translate,
     white,
   )
-import Model.Constants (scalingFactor)
+import Model.Constants (scalingFactor, textSize, xLivesOffset, xScoreOffset, xHighScoreOffset, yHighScoreOffset, degrees90, factor)
 import Model.Ghost (Ghost (Ghost), GhostType (Blinky, Clyde, Inky, Pinky), Wellbeing (Frightened, Normal, Respawning, Scattered, Spawning))
 import Model.Maze (Collectable (Dot, Energizer), CornerDirection (Ne, Nw, Se, Sw), EdgeDirection (E, N, S, W), FloorType (Trapdoor), Maze, PipeDirection (H, V), Tile (Floor, Wall), WallType (Contained, Corner, Edge, Pipe, Stump), getMazeSize)
 import Model.Model
@@ -108,8 +108,8 @@ showAll s ws@WorldState {gameState = state, textures = allTextures, animation = 
            ]
 
 -- | Shows the lives at the top of the screen whilest playing
-showLives :: (Float, Float) -> GameState -> Picture -- Hearts
-showLives s state = translate (abs x + x - 110) (abs y + y) (Color red $ Scale 0.2 0.2 $ Text ("Lives: " ++ show (lives state)))
+showLives :: (Float, Float) -> GameState -> Picture 
+showLives s state = translate (abs x + x - xLivesOffset) (abs y + y) (Color red $ Scale textSize textSize $ Text ("Lives: " ++ show (lives state)))
   where
     (x, y) = centerOfMaze s
 
@@ -121,7 +121,7 @@ showPause s text = translate x y (paused $ textTextures text)
 
 -- | Shows the score at the top of the screen
 showScore :: (Float, Float) -> GameState -> Picture
-showScore s state = translate (abs x - x + 10) (abs y + y) (Color white $ Scale 0.2 0.2 $ Text ("Score: " ++ show (score state)))
+showScore s state = translate (abs x - x + xScoreOffset) (abs y + y) (Color white $ Scale textSize textSize $ Text ("Score: " ++ show (score state)))
   where
     (x, y) = centerOfMaze s
 
@@ -135,8 +135,8 @@ showMenu s text = translate x y (menu $ textTextures text)
 showHighScores :: (Float, Float) -> WorldState -> Picture
 showHighScores s ws =
   Pictures
-    [ translate (x / 2 + 20) (y + y) (Color red $ Scale 0.2 0.2 $ Text "HIGHSCORES"),
-      translate (x / 2) (y + y - 40) (Color white $ Scale 0.2 0.2 text)
+    [ translate (x / 2 + xHighScoreOffset) (y + y) (Color red $ Scale textSize textSize $ Text "HIGHSCORES"),
+      translate (x / 2) (y + y - yHighScoreOffset) (Color white $ Scale textSize textSize text)
     ]
   where
     text = Pictures $ zipWith (\line y -> translate (x / 2) y (Text line)) (highScores ws) [0, -120 ..]
@@ -151,10 +151,10 @@ showPlayer gstate animations = case player gstate of
 
       -- Rotate the player based on its direction
       rotation = case direction $ player gstate of
-        U -> rotate (-90)
-        D -> rotate 90
-        L -> scale (-1) 1
-        R -> scale 1 1
+        U -> rotate (-degrees90)
+        D -> rotate degrees90
+        L -> scale (-factor) factor
+        R -> scale factor factor
 
 -- | Shows the ghosts
 showGhosts :: GameState -> AllAnimations -> Picture

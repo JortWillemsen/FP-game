@@ -6,6 +6,7 @@ import View.Animation ()
 import View.File( loadLevel, loadHighScores, AllTextures, AllAnimations, loadAnimations, loadTextures ) 
 import View.Random (generateSeed)
 import System.Random (StdGen)
+import Model.Constants (maxNumOfLevels, levelOne)
 
 data WorldState = WorldState
   { gameState :: GameState,
@@ -18,7 +19,7 @@ data WorldState = WorldState
 createWorldState :: Level -> IO WorldState
 createWorldState n =
   do
-    let l = if n > 5 then 1 else n    
+    let l = if n > maxNumOfLevels then levelOne else n    
     textures <- loadTextures
     level <- loadLevel l "level/"
     highscores <- loadHighScores
@@ -29,7 +30,7 @@ createWorldState n =
 createCustomWorldState :: WorldState -> Level -> IO WorldState
 createCustomWorldState ws n =
   do
-    let l = if n > 5 then 1 else n 
+    let l = if n > maxNumOfLevels then levelOne else n 
     textures <- loadTextures
     level <- loadLevel l "level/custom/"
     highscores <- loadHighScores 

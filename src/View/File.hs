@@ -8,6 +8,7 @@ import Control.Monad (when)
 import Model.Player (PlayerType (PuckMan))
 import Data.List (insert)
 import Graphics.Gloss (Picture, loadBMP)
+import Model.Constants (highScoreLimit)
 
 type Texture = Picture
 type Duration = Float
@@ -77,7 +78,7 @@ saveHighScores :: HighScore -> [String] -> IO ()
 saveHighScores score scores = do
     -- Finds the high scores, inserts the new one and saves the 10 highest
     -- Due to Haskell's laziness we need to use seq to close the file from reading since we use it when we want to write to it
-    length scores `seq` writeFile "score/highscores.txt" ((buildScoreString . take 10 . reverse . insert score . reverse  . buildScoreList) scores)
+    length scores `seq` writeFile "score/highscores.txt" ((buildScoreString . take highScoreLimit . reverse . insert score . reverse  . buildScoreList) scores)
 
     where
         -- | Serializes into the High Score type

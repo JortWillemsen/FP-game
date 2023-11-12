@@ -14,8 +14,8 @@ randomPlayerSpawn g m = (pos spawnPoint, newGen) where
   spawns = getSpawns PlayerSpawn m
 
 -- | Assigns a random spawn point for each ghost based on all possible spawn points
-randomSpawns :: (RandomGen g) => g -> SpawnPoint -> [a] -> Maze -> ([Position], g)
-randomSpawns gen sp ghosts m = (map (spawnPositions !!) $ randomIndexesFromList gen (length ghosts) (length spawns), gen)
+randomSpawns :: (RandomGen g) => g -> SpawnPoint -> Int -> Maze -> ([Position], g)
+randomSpawns gen sp amount m = (map (spawnPositions !!) $ randomIndexesFromList gen amount (length spawns), gen)
   where
     spawns = getSpawns sp m
     spawnPositions = map pos spawns

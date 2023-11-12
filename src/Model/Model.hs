@@ -7,7 +7,7 @@ import Model.Score
 import Model.Move (Direction(L, U, D, R), Toggled (Released), Moveable (moveTo))
 import System.Random (StdGen, mkStdGen)
 import Model.Spawning (randomPlayerSpawn, randomSpawns)
-import Model.Constants (scatterTime, initiateLives)
+import Model.Constants (scatterTime, initialLives, initialScore, initialTime, blinkySpawnTime, pinkySpawnTime, inkySpawnTime, clydeSpawnTime, numOfGhosts)
 import qualified Model.Player as Player
 import qualified Model.Player as Ghost
 
@@ -50,23 +50,23 @@ basicState :: [String] -> Level -> Int -> GameState
 basicState level l r = 
   GameState 
     maze  
-    initiateLives 
-    0 
-    0 
-    0 
+    initialLives 
+    initialScore
+    initialTime 
+    initialTime
     (Player PuckMan playerSpawn inputBufferWASD L playerSpawn)  
-    (Ghost Blinky (head ghostSpawns) (head ghostSpawns) L (head scatterSpawns) (Spawning 0))
-    (Ghost Pinky (ghostSpawns!!1) (ghostSpawns!!1) R (scatterSpawns!!1) (Spawning 5)) 
-    (Ghost Inky (ghostSpawns!!2) (ghostSpawns!!2) L (scatterSpawns!!2) (Spawning 10)) 
-    (Ghost Clyde (ghostSpawns!!3) (ghostSpawns!!3) R (scatterSpawns!!3) (Spawning 20))
+    (Ghost Blinky (head ghostSpawns) (head ghostSpawns) L (head scatterSpawns) (Spawning blinkySpawnTime))
+    (Ghost Pinky (ghostSpawns!!1) (ghostSpawns!!1) R (scatterSpawns!!1) (Spawning pinkySpawnTime)) 
+    (Ghost Inky (ghostSpawns!!2) (ghostSpawns!!2) L (scatterSpawns!!2) (Spawning inkySpawnTime)) 
+    (Ghost Clyde (ghostSpawns!!3) (ghostSpawns!!3) R (scatterSpawns!!3) (Spawning clydeSpawnTime))
     l 
     (ScreenState Hide Hide Hide)
     random 
     where
       maze = loadMaze level
       (playerSpawn, gen) = randomPlayerSpawn random maze
-      (ghostSpawns, gen') = randomSpawns gen GhostSpawn [1, 2, 3, 4] maze
-      (scatterSpawns, _) = randomSpawns gen' ScatterSpawn [1, 2, 3, 4] maze
+      (ghostSpawns, gen') = randomSpawns gen GhostSpawn numOfGhosts maze
+      (scatterSpawns, _) = randomSpawns gen' ScatterSpawn numOfGhosts maze
       random = mkStdGen r
 
 -- | Resets all entities to their spawn position

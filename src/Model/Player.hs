@@ -54,7 +54,9 @@ instance Collidable Player where
   collisions (Player {}) = ["ghost", "wall", "trapdoor", "collectible"]
   
   hitBox :: Player -> HitBox
-  hitBox (Player _ p@(x, y) _ _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
+  hitBox (Player _ p@(x, y) _ _ _) = [p, (x, y + tileSize - stdHitboxMargin), 
+                                         (x + tileSize - stdHitboxMargin, y + tileSize - stdHitboxMargin), 
+                                         (x + tileSize - stdHitboxMargin, y)]
 
 resetInputBuffer :: Player -> Player
 resetInputBuffer (Player t pos ibs L sp) = Player t pos inputBufferWASD L sp

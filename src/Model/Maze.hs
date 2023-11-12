@@ -58,10 +58,19 @@ instance Collidable Tile where
   name (Wall {}) = "wall"
 
   hitBox :: Tile -> HitBox
-  hitBox (Wall p@(x, y) _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
-  hitBox (Floor Trapdoor p@(x, y) _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
-  hitBox (Floor _ p@(x, y) (Just Energizer) _ ) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
-  hitBox (Floor _ (x, y) (Just Dot) _ ) = [(x + (tileSize / 2), y + (tileSize / 2)), (x + (tileSize / 2) + 1, y + (tileSize / 2)), (x + (tileSize / 2) + 1, y + (tileSize / 2) + 1), (x + (tileSize / 2), y + (tileSize / 2) + 1)]
+  hitBox (Wall p@(x, y) _) = [p, (x, y + tileSize - stdHitboxMargin), 
+                                 (x + tileSize - stdHitboxMargin, y + tileSize - stdHitboxMargin), 
+                                 (x + tileSize - stdHitboxMargin, y)]
+  hitBox (Floor Trapdoor p@(x, y) _ _) = [p, (x, y + tileSize - stdHitboxMargin), 
+                                             (x + tileSize - stdHitboxMargin, y + tileSize - stdHitboxMargin), 
+                                             (x + tileSize - stdHitboxMargin, y)]
+  hitBox (Floor _ p@(x, y) (Just Energizer) _ ) = [p, (x, y + tileSize - stdHitboxMargin), 
+                                                      (x + tileSize - stdHitboxMargin, y + tileSize - stdHitboxMargin), 
+                                                      (x + tileSize - stdHitboxMargin, y)]
+  hitBox (Floor _ (x, y) (Just Dot) _ ) = [(x + (tileSize - dotHitboxMargin), y + (tileSize - dotHitboxMargin)), 
+                                           (x + (tileSize - dotHitboxMargin) + dotHitboxSize, y + (tileSize - dotHitboxMargin)), 
+                                           (x + (tileSize - dotHitboxMargin) + dotHitboxSize, y + (tileSize - dotHitboxMargin) + dotHitboxSize), 
+                                           (x + (tileSize - dotHitboxMargin), y + (tileSize - dotHitboxMargin) + dotHitboxSize)]
   hitBox (Floor {}) = []
 
 -- | Finds the position of the tile
@@ -185,7 +194,7 @@ findTileInMaze (t : ts) p
 
 -- | Finds the largest possible position in the maze
 getMazeSize :: Maze -> Position
-getMazeSize = foldr (max . pos) (0, 0)
+getMazeSize = foldr (max . pos) zeroPosition
 
 -- | Checks if a tile holds a specific spawn point
 isSpawn :: SpawnPoint -> Tile -> Bool

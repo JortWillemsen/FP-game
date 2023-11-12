@@ -65,7 +65,9 @@ instance Collidable Ghost where
   name :: Ghost -> Name
   name (Ghost {}) = "ghost"
   hitBox :: Ghost -> HitBox
-  hitBox (Ghost _ p@(x, y) _ _ _ _) = [p, (x, y + tileSize - 0.1), (x + tileSize - 0.1, y + tileSize - 0.1), (x + tileSize - 0.1, y)]
+  hitBox (Ghost _ p@(x, y) _ _ _ _) = [p, (x, y + tileSize - stdHitboxMargin), 
+                                          (x + tileSize - stdHitboxMargin, y + tileSize - stdHitboxMargin), 
+                                          (x + tileSize - stdHitboxMargin, y)]
 
 -- | Inserts a new wellbeing in the ghost
 newWellbeing :: Wellbeing -> Ghost -> Ghost
